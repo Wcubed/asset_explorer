@@ -39,10 +39,13 @@ class DirectoryExplorer(widgets.QWidget):
         self.view.setModel(self.model)
         self.view.setRootIndex(self.model.index(self.current_directory.absolutePath()))
         self.view.setExpandsOnDoubleClick(False)
+
         # Hide the 'type', 'size' and 'date-modified' columns.
         self.view.setColumnHidden(1, True)
         self.view.setColumnHidden(2, True)
         self.view.setColumnHidden(3, True)
+
+        self.view.doubleClicked.connect(self.on_double_click_directory)
 
         layout.addWidget(self.view)
 
@@ -52,7 +55,18 @@ class DirectoryExplorer(widgets.QWidget):
         """
         self.current_directory.cdUp()
 
-        # Update the UI to match.
+        self.update_ui()
+
+    def on_double_click_directory(self, index):
+        """
+        Make a double clicked directory the new root.
+        """
+        path = self.model.filePath(index)
+        self.current_directory.cd(path)
+
+        self.update_ui()
+
+    def update_ui(self):
         self.current_dir_label.setText("/" + self.current_directory.dirName())
         self.model.setRootPath(self.current_directory.absolutePath())
         self.view.setRootIndex(self.model.index(self.current_directory.absolutePath()))
