@@ -1,14 +1,15 @@
 import logging
 
+import PyQt5.QtWidgets as widgets
 from PyQt5.QtCore import QDirIterator, QDir
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFileDialog, QListWidget
 
 import data
+from widgets.directory_explorer import DirectoryExplorer
 
 ASSET_FILE_EXTENSIONS = ["*.png"]
 
 
-class MainWindow(QWidget):
+class MainWindow(widgets.QWidget):
     def __init__(self):
         super().__init__()
 
@@ -16,21 +17,21 @@ class MainWindow(QWidget):
 
         # ---- Layout ----
 
-        layout = QVBoxLayout()
+        layout = widgets.QVBoxLayout()
         self.setLayout(layout)
 
         self.setWindowTitle(self.tr("Asset Explorer"))
 
-        asset_dir_widget = QListWidget()
-        layout.addWidget(asset_dir_widget)
+        directory_explorer = DirectoryExplorer()
+        layout.addWidget(directory_explorer)
 
-        new_asset_dir_button = QPushButton(text=self.tr("New"))
+        new_asset_dir_button = widgets.QPushButton(text=self.tr("New"))
         new_asset_dir_button.clicked.connect(self.add_new_asset_folder)
         layout.addWidget(new_asset_dir_button)
 
     def add_new_asset_folder(self):
-        new_dir = QFileDialog.getExistingDirectory(parent=self, caption=self.tr("Select an asset folder"),
-                                                   options=QFileDialog.DontResolveSymlinks)
+        new_dir = widgets.QFileDialog.getExistingDirectory(parent=self, caption=self.tr("Select an asset folder"),
+                                                           options=widgets.QFileDialog.DontResolveSymlinks)
 
         if new_dir == "":
             return
