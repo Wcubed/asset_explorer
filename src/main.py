@@ -1,16 +1,27 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import PySimpleGUI as sg
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def main():
+    sg.theme("Dark")
+
+    layout = [
+        [sg.Text("This is testing text.")],
+        [sg.Text("A testing input:"), sg.InputText()],
+        [sg.Button("It's a button!")]
+    ]
+
+    window = sg.Window("A testing window", layout)
+
+    # Event loop.
+    while True:
+        event, values = window.read()
+
+        if event == sg.WIN_CLOSED:
+            # Stop the program.
+            break
+
+    window.close()
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
