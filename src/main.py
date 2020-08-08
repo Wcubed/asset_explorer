@@ -1,26 +1,16 @@
-import PySimpleGUI as sg
+import sys
+
+from PyQt5.QtWidgets import QApplication, QWidget
 
 
 def main():
-    sg.theme("Dark")
+    app = QApplication(sys.argv)
 
-    layout = [
-        [sg.Text("This is testing text.")],
-        [sg.Text("A testing input:"), sg.InputText()],
-        [sg.Button("It's a button!")]
-    ]
-
-    window = sg.Window("A testing window", layout)
-
-    # Event loop.
-    while True:
-        event, values = window.read()
-
-        if event == sg.WIN_CLOSED:
-            # Stop the program.
-            break
-
-    window.close()
+    window = QWidget()
+    window.setWindowTitle("Asset explorer")
+    window.show()
+    
+    app.exec()
 
 
 if __name__ == '__main__':
