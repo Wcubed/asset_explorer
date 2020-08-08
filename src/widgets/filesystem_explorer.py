@@ -2,7 +2,7 @@ import PyQt5.QtWidgets as widgets
 from PyQt5.QtCore import QDir
 
 
-class DirectoryExplorer(widgets.QWidget):
+class FilesystemExplorer(widgets.QWidget):
     def __init__(self):
         super().__init__()
 
@@ -39,6 +39,7 @@ class DirectoryExplorer(widgets.QWidget):
         self.view.setModel(self.model)
         self.view.setRootIndex(self.model.index(self.current_directory.absolutePath()))
         self.view.setExpandsOnDoubleClick(False)
+        self.view.setHeaderHidden(True)
 
         # Hide the 'type', 'size' and 'date-modified' columns.
         self.view.setColumnHidden(1, True)
@@ -70,3 +71,14 @@ class DirectoryExplorer(widgets.QWidget):
         self.current_dir_label.setText("/" + self.current_directory.dirName())
         self.model.setRootPath(self.current_directory.absolutePath())
         self.view.setRootIndex(self.model.index(self.current_directory.absolutePath()))
+
+    def get_selected_directory(self):
+        """
+        Returns the path to the current selected directory, or an empty string when nothing is selected.
+        """
+        selected = self.view.selectedIndexes()
+
+        if len(selected) != 0:
+            return self.model.filePath(selected.pop())
+        else:
+            return ""
