@@ -19,3 +19,4 @@ This is an attempt to make it easy to search for a particular kind of item or im
 
 - PyQt5 (pip/pip3 install PyQt5)
     - Docs: https://doc.qt.io/qtforpython/contents.html
+    - Class reference: https://doc.bccnsoft.com/docs/PyQt5/class_reference.html

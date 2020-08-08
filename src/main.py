@@ -1,7 +1,9 @@
 import logging
 import sys
 
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QApplication
+
+from main_window import MainWindow
 
 
 def main():
@@ -11,23 +13,10 @@ def main():
 
     app = QApplication(sys.argv)
 
-    window = QWidget()
-    window.setWindowTitle("Asset explorer")
-
-    layout = QVBoxLayout()
-
-    test_button = QPushButton(text="Do the thing!")
-    test_button.clicked.connect(button_clicked)
-    layout.addWidget(test_button)
-
-    window.setLayout(layout)
+    window = MainWindow()
     window.show()
 
     app.exec()
-
-
-def button_clicked():
-    logging.info("Did a thing!")
 
 
 if __name__ == '__main__':
