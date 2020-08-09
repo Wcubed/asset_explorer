@@ -25,8 +25,16 @@ class AssetPacks(widgets.QWidget):
         self.view.setHorizontalHeaderItem(self.PATH_COL, widgets.QTableWidgetItem(self.tr("Path")))
         self.view.horizontalHeader().setSectionResizeMode(1, widgets.QHeaderView.Stretch)
 
+        self.view.verticalHeader().hide()
+
+        # Disable editing.
+        self.view.setEditTriggers(self.view.NoEditTriggers)
+
     @core.pyqtSlot(str, core.QDir)
     def add_pack(self, name: str, path: core.QDir):
         self.view.insertRow(0)
         self.view.setItem(0, self.NAME_COL, widgets.QTableWidgetItem(name))
-        self.view.setItem(0, self.PATH_COL, widgets.QTableWidgetItem(path.absolutePath()))
+
+        # TODO: right align this, and then "..." on the left?
+        path_item = widgets.QTableWidgetItem(path.absolutePath())
+        self.view.setItem(0, self.PATH_COL, path_item)

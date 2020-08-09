@@ -1,5 +1,7 @@
 import PyQt5.QtCore as core
 
+from . import asset_pack
+
 
 class Data(core.QObject):
     """
@@ -18,8 +20,10 @@ class Data(core.QObject):
         #   or a duplicate directory.
         #   or a parent directory.
         #   return an exception when that happens.
-        self._asset_packs.append(pack_path)
-        self.pack_added.emit(pack_path.dirName(), pack_path)
+        new_pack = asset_pack.AssetPack(pack_path)
+
+        self._asset_packs.append(new_pack)
+        self.pack_added.emit(new_pack.name, new_pack.path)
 
     def add_asset_packs(self, pack_paths: [core.QDir]):
         for pack in pack_paths:
