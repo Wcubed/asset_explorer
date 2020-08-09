@@ -34,3 +34,6 @@ class AssetPack:
             self.assets.append(relative_path)
 
         logging.info("Found {} assets in pack \"{}\"".format(len(self.assets), self.name))
+
+    def get_asset_count(self) -> int:
+        return len(self.assets)

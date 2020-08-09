@@ -8,9 +8,9 @@ from . import asset_pack
 class Data(core.QObject):
     """
     Emitted when a new asset pack has been added.
-    (name, pack_directory)
+    (name, asset_count, pack_directory)
     """
-    pack_added = core.pyqtSignal(str, core.QDir)
+    pack_added = core.pyqtSignal(str, int, core.QDir)
 
     def __init__(self):
         super().__init__()
@@ -34,12 +34,12 @@ class Data(core.QObject):
 
         self._asset_packs.append(new_pack)
 
-        logging.info("Added asset pack \"{}\" from: \"{}\"".format(new_pack.name, new_pack.path.absolutePath()))
-
-        self.pack_added.emit(new_pack.name, new_pack.path)
-
         # TODO: do this asynchronously, and with a progress bar?
         new_pack.scan_pack_directory()
+
+        logging.info("Added asset pack \"{}\" from: \"{}\"".format(new_pack.name, new_pack.path.absolutePath()))
+
+        self.pack_added.emit(new_pack.name, new_pack.get_asset_count(), new_pack.path)
 
     def add_asset_packs(self, pack_paths: [core.QDir]):
         for pack in pack_paths:
