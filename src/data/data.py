@@ -38,6 +38,9 @@ class Data(core.QObject):
 
         self.pack_added.emit(new_pack.name, new_pack.path)
 
+        # TODO: do this asynchronously, and with a progress bar?
+        new_pack.scan_pack_directory()
+
     def add_asset_packs(self, pack_paths: [core.QDir]):
         for pack in pack_paths:
             self.add_asset_pack(pack)

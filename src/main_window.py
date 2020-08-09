@@ -1,12 +1,7 @@
-import logging
-
 import PyQt5.QtWidgets as widgets
-from PyQt5.QtCore import QDirIterator, QDir
 
 import data
 from widgets import filesystem_explorer, pack_list_widget
-
-ASSET_FILE_EXTENSIONS = ["*.png"]
 
 
 class MainWindow(widgets.QWidget):
@@ -53,11 +48,3 @@ class MainWindow(widgets.QWidget):
 
         self.data.add_asset_packs(new_dirs)
         self.directory_explorer.clear_selection()
-
-    def scan_asset_directory(self, path):
-        # TODO: this should probably be put in the DATA class.
-        files = QDirIterator(path, ASSET_FILE_EXTENSIONS, QDir.Files, QDirIterator.Subdirectories)
-
-        while files.hasNext():
-            file = files.next()
-            logging.info(file)
