@@ -13,6 +13,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Remember the tags. By saving them in a `.asset_dir.csv` in the directory itself?
 - [ ] Show all images with a tag
 - [ ] Grid of images instead of a list. That way you can see more of them (the whole point of the exercise)
+- [ ] Drop the full image from memory again if we don't need it. Otherwise we will fill quite a bit of ram.
 
 # Whishlist
 - Remember the images by the hash of their path that way we can:
