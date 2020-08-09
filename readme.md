@@ -7,6 +7,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Remove an asset pack (folder) from the library.
 - [x] Save the asset packs loaded into one of the common user directories. (in QStandardPaths::AppConfigLocation?)
 - [x] Show all images in an asset pack.
+- [x] Only load images when they are actually visible in the list.
 - [ ] Tag images.
 - [ ] Show what tags an image has.
 - [ ] Remember the tags. By saving them in a `.asset_dir.csv` in the directory itself?

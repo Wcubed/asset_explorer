@@ -74,16 +74,16 @@ class AssetListWidget(Qwidgets.QWidget):
             self.view.setItem(0, self.ABSOLUTE_PATH_COL, Qwidgets.QTableWidgetItem(asset.get_absolute_path()))
             # The thumbnails will be loaded when the item is visible.
 
-        self.load_visible_item_thumbnails()
+        self.load_visible_asset_thumbnails()
 
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         # Make sure any newly visible items have their image thumbnail loaded.
-        self.load_visible_item_thumbnails()
+        self.load_visible_asset_thumbnails()
 
     def on_scrollbar_value_changed(self):
-        self.load_visible_item_thumbnails()
+        self.load_visible_asset_thumbnails()
 
-    def load_visible_item_thumbnails(self):
+    def load_visible_asset_thumbnails(self):
         """
         Loads and applies only the thumbnails from the visible items.
         """
@@ -97,7 +97,8 @@ class AssetListWidget(Qwidgets.QWidget):
 
         # Check if we have hit the bottom
         # Needed because qt shows "bottom visible row" as -1 when we are all the way at the end.
-        if top_visible_row > 0 and bottom_visible_row == -1:
+        # And because it will somehow show as "0" when the items fit into the table without scrolling.
+        if bottom_visible_row == -1 or bottom_visible_row == 0:
             bottom_visible_row = self.view.rowCount() - 1
 
         # Up to and including the bottom visible row.
