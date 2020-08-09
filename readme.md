@@ -14,6 +14,8 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Grid of images instead of a list. That way you can see more of them (the whole point of the exercise)
 
 # Whishlist
+- Remember the images by the hash of their path that way we can:
+    - Cache the thumbnails on disk, by saving them with the hash of the asset path.
 - Autosave interval? So we don't save for every little thing.
 - Automatically discover alternate versions of an image (transparent / psd file etc.)
 - Detect when we add a folder which is inside a folder we already have added.

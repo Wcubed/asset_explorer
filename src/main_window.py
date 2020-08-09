@@ -104,9 +104,9 @@ class MainWindow(Qwidgets.QMainWindow):
     def on_pack_selection_changed(self):
         # Show the selected asset packs in the asset list.
         selected_packs = self.pack_list_widget.get_selected_packs()
-        assets = []
+        assets = {}
         for folder in selected_packs:
-            assets += self.data.get_pack(folder).get_assets()
+            assets.update(self.data.get_pack(folder).get_assets())
 
         self.asset_list_widget.show_assets(assets)
 

@@ -15,7 +15,7 @@ class AssetPack:
         self.path = path
         self.name = path.dirName()
 
-        self.assets = []
+        self.assets = {}
 
     def scan_pack_directory(self):
         """
@@ -26,19 +26,20 @@ class AssetPack:
                 That way, one wouldn't loose the tags / other settings on it.
         """
 
-        self.assets = []
+        self.assets = {}
 
         files = QDirIterator(self.path.absolutePath(), self.FILE_EXTENSIONS, QDir.Files, QDirIterator.Subdirectories)
 
         while files.hasNext():
             path = files.next()
-            # relative_path = self.path.relativeFilePath(file)
-            self.assets.append(Asset(path))
+            asset = Asset(path)
+
+            self.assets[asset.get_absolute_path()] = asset
 
         logging.info("Found {} assets in pack \"{}\"".format(len(self.assets), self.name))
 
     def get_asset_count(self) -> int:
-        return len(self.assets)
+        return len(self.assets.keys())
 
     def get_assets(self) -> [Asset]:
         return self.assets

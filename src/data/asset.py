@@ -16,6 +16,9 @@ class Asset:
     def get_name(self) -> str:
         return self.file_info.fileName()
 
+    def get_absolute_path(self) -> str:
+        return self.file_info.absoluteFilePath()
+
     def load_image_cached(self) -> QPixmap:
         if self.image:
             return self.image
