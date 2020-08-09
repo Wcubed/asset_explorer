@@ -1,5 +1,7 @@
 import PyQt5.QtWidgets as Qwidgets
 
+from data import Asset
+
 
 class AssetListWidget(Qwidgets.QWidget):
     IMAGE_COL = 0
@@ -32,3 +34,13 @@ class AssetListWidget(Qwidgets.QWidget):
         # Allow multiselect with shift and ctrl. Select full rows.
         self.view.setSelectionMode(self.view.ExtendedSelection)
         self.view.setSelectionBehavior(self.view.SelectRows)
+
+    def show_assets(self, assets: [Asset]):
+        # Remove previous displayed assets.
+        # TODO: this can probably be done more efficient.
+        #       For example by checking if certain assets are already there.
+        self.view.setRowCount(0)
+
+        for asset in assets:
+            self.view.insertRow(0)
+            self.view.setItem(0, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))

@@ -1,3 +1,4 @@
+import PyQt5.QtCore as Qcore
 import PyQt5.QtWidgets as Qwidgets
 
 import data
@@ -49,9 +50,20 @@ class MainWindow(Qwidgets.QWidget):
         new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
         # Make sure the view updates when the data structure grows.
         self.data.pack_added.connect(self.pack_list_widget.add_pack)
+        self.pack_list_widget.selection_changed.connect(self.on_pack_selection_changed)
 
     def add_new_asset_packs(self):
         new_dirs = self.directory_explorer.get_selected_directories()
 
         self.data.add_asset_packs(new_dirs)
         self.directory_explorer.clear_selection()
+
+    @Qcore.pyqtSlot()
+    def on_pack_selection_changed(self):
+        # Show the selected asset packs in the asset list.
+        selected_packs = self.pack_list_widget.get_selected_packs()
+        assets = []
+        for folder in selected_packs:
+            assets += self.data.get_pack(folder).get_assets()
+
+        self.asset_list_widget.show_assets(assets)

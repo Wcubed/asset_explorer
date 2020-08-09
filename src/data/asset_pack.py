@@ -2,6 +2,8 @@ import logging
 
 from PyQt5.QtCore import QDir, QDirIterator
 
+from data import Asset
+
 
 class AssetPack:
     """
@@ -29,11 +31,14 @@ class AssetPack:
         files = QDirIterator(self.path.absolutePath(), self.FILE_EXTENSIONS, QDir.Files, QDirIterator.Subdirectories)
 
         while files.hasNext():
-            file = files.next()
-            relative_path = self.path.relativeFilePath(file)
-            self.assets.append(relative_path)
+            path = files.next()
+            # relative_path = self.path.relativeFilePath(file)
+            self.assets.append(Asset(path))
 
         logging.info("Found {} assets in pack \"{}\"".format(len(self.assets), self.name))
 
     def get_asset_count(self) -> int:
         return len(self.assets)
+
+    def get_assets(self) -> [Asset]:
+        return self.assets
