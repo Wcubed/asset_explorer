@@ -23,7 +23,9 @@ class AssetListWidget(Qwidgets.QWidget):
 
         self.view.insertColumn(self.IMAGE_COL)
         self.view.setHorizontalHeaderItem(self.IMAGE_COL, Qwidgets.QTableWidgetItem(""))
-        self.view.setColumnWidth(self.IMAGE_COL, self.IMAGE_SIZE)
+        # The image column needs to be a bit wider than the image size,
+        # because for some reason qt finds it a good idea to have a small padding on the left of the column.
+        self.view.setColumnWidth(self.IMAGE_COL, self.IMAGE_SIZE + 10)
 
         self.view.insertColumn(self.NAME_COL)
         self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem("Name"))
@@ -31,7 +33,9 @@ class AssetListWidget(Qwidgets.QWidget):
 
         # Make the rows IMAGE_SIZE pixels high.
         self.view.verticalHeader().hide()
-        self.view.verticalHeader().setDefaultSectionSize(self.IMAGE_SIZE)
+        # Height needs to be larger than the image size,
+        # because we add a padding of X pixels total (top + bottom) to the items.
+        self.view.verticalHeader().setDefaultSectionSize(self.IMAGE_SIZE + 3)
 
         # Disable editing.
         self.view.setEditTriggers(self.view.NoEditTriggers)
@@ -39,6 +43,10 @@ class AssetListWidget(Qwidgets.QWidget):
         # Allow multiselect with shift and ctrl. Select full rows.
         self.view.setSelectionMode(self.view.ExtendedSelection)
         self.view.setSelectionBehavior(self.view.SelectRows)
+
+        # Style the table.
+        self.view.setShowGrid(False)
+        self.view.setStyleSheet("QTableWidget::item { border: 0px; padding-top: 3px; }")
 
     def show_assets(self, assets: [Asset]):
         # Remove previous displayed assets.

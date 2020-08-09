@@ -11,6 +11,7 @@ import widgets
 
 
 class MainWindow(Qwidgets.QMainWindow):
+    DEFAULT_WINDOW_SIZE = (1000, 800)
     CONFIG_FILE_NAME = "config.json"
     # Version number to keep track of breaking changes in config files.
     CONFIG_VERSION = 1
@@ -40,6 +41,7 @@ class MainWindow(Qwidgets.QMainWindow):
         central_widget.setLayout(layout)
 
         self.setWindowTitle(self.tr("Asset Explorer"))
+        self.resize(self.DEFAULT_WINDOW_SIZE[0], self.DEFAULT_WINDOW_SIZE[1])
 
         self.main_splitter = Qwidgets.QSplitter()
         layout.addWidget(self.main_splitter)

@@ -5,7 +5,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 
 - [x] Add an asset pack (folder) to the library.
 - [ ] Remove an asset pack (folder) from the library.
-- [ ] Save the asset packs loaded into one of the common user directories. (in QStandardPaths::AppConfigLocation?)
+- [x] Save the asset packs loaded into one of the common user directories. (in QStandardPaths::AppConfigLocation?)
 - [x] Show all images in an asset pack.
 - [ ] Tag images.
 - [ ] Show what tags an image has.

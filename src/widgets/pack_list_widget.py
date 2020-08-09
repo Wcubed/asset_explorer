@@ -24,6 +24,7 @@ class PackListWidget(Qwidgets.QWidget):
         # Setup the headers.
         self.view.insertColumn(self.NAME_COL)
         self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem(self.tr("Name")))
+        self.view.setColumnWidth(self.NAME_COL, 150)
 
         self.view.insertColumn(self.COUNT_COL)
         self.view.setHorizontalHeaderItem(self.COUNT_COL, Qwidgets.QTableWidgetItem(self.tr("Assets")))
