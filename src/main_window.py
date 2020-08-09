@@ -3,13 +3,14 @@ import logging
 import os
 
 import PyQt5.QtCore as Qcore
+import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
 
 import data
 import widgets
 
 
-class MainWindow(Qwidgets.QWidget):
+class MainWindow(Qwidgets.QMainWindow):
     CONFIG_FILE_NAME = "config.json"
     # Version number to keep track of breaking changes in config files.
     CONFIG_VERSION = 1
@@ -33,8 +34,10 @@ class MainWindow(Qwidgets.QWidget):
 
         # ---- Layout ----
 
+        central_widget = Qwidgets.QWidget()
+        self.setCentralWidget(central_widget)
         layout = Qwidgets.QHBoxLayout()
-        self.setLayout(layout)
+        central_widget.setLayout(layout)
 
         self.setWindowTitle(self.tr("Asset Explorer"))
 
@@ -75,6 +78,16 @@ class MainWindow(Qwidgets.QWidget):
         # ----
 
         self.load_config()
+
+    def closeEvent(self, event: Qgui.QCloseEvent) -> None:
+        """
+        Overloaded close event.
+        So we can save our current configuration, before closing.
+        """
+        self.save_config()
+
+        # Close.
+        event.accept()
 
     def add_new_asset_packs(self):
         new_dirs = self.directory_explorer.get_selected_directories()
@@ -119,7 +132,7 @@ class MainWindow(Qwidgets.QWidget):
                     self.data.add_asset_pack(Qcore.QDir(pack))
 
                 # Restore the last directory the explorer was at.
-                # self.directory_explorer.cd_to_directory(config[self.CFG_KEY_LAST_DIRECTORY])
+                self.directory_explorer.cd_to_directory(config[self.CFG_KEY_LAST_DIRECTORY])
         except IOError as e:
             # We could not load the file.
             # todo: show an appropriate log message for the reason.
