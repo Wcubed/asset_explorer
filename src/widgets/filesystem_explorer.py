@@ -75,7 +75,7 @@ class FilesystemExplorer(widgets.QWidget):
         self.model.setRootPath(self.current_directory.absolutePath())
         self.view.setRootIndex(self.model.index(self.current_directory.absolutePath()))
 
-    def get_selected_directories(self) -> [str]:
+    def get_selected_directories(self) -> [QDir]:
         """
         Returns a list of current selected directories, or an empty list when noting is selected.
         """
@@ -83,6 +83,9 @@ class FilesystemExplorer(widgets.QWidget):
         selected = []
 
         for index in selected_idxs:
-            selected.append(self.model.filePath(index))
+            selected.append(QDir(self.model.filePath(index)))
 
         return selected
+
+    def clear_selection(self):
+        self.view.clearSelection()
