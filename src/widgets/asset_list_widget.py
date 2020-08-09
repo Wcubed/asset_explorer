@@ -1,29 +1,34 @@
 import PyQt5.QtWidgets as Qwidgets
-from PyQt5.QtCore import Qt
-
-from . import asset_widget
 
 
 class AssetListWidget(Qwidgets.QWidget):
+    IMAGE_COL = 0
+    NAME_COL = 1
+
     def __init__(self):
         super().__init__()
 
         layout = Qwidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-        # TODO: Make this a responsive grid layout?
-        self.asset_scroller = Qwidgets.QScrollArea()
-        # todo: Make the scroll area always as wide as the content.
-        self.asset_scroller.horizontalScrollBar().setEnabled(False)
-        self.asset_scroller.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        layout.addWidget(self.asset_scroller)
+        self.view = Qwidgets.QTableWidget()
+        layout.addWidget(self.view)
 
-        self.asset_view = Qwidgets.QWidget()
-        self.asset_layout = Qwidgets.QVBoxLayout()
-        self.asset_view.setLayout(self.asset_layout)
+        self.view.insertColumn(self.IMAGE_COL)
+        self.view.setHorizontalHeaderItem(self.IMAGE_COL, Qwidgets.QTableWidgetItem(""))
 
-        for _ in range(0, 100):
-            self.asset_layout.addWidget(asset_widget.AssetWidget())
+        self.view.insertColumn(self.NAME_COL)
+        self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem("Name"))
+        self.view.horizontalHeader().setSectionResizeMode(self.NAME_COL, Qwidgets.QHeaderView.Stretch)
 
-        self.asset_scroller.setWidget(self.asset_view)
-        self.asset_view.show()
+        self.view.verticalHeader().hide()
+
+        self.view.setEditTriggers(self.view.NoEditTriggers)
+
+        # Disable editing.
+        self.view.setEditTriggers(self.view.NoEditTriggers)
+
+        # Allow multiselect with shift and ctrl. Select full rows.
+        self.view.setSelectionMode(self.view.ExtendedSelection)
+        self.view.setSelectionBehavior(self.view.SelectRows)

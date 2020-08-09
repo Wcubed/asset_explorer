@@ -14,7 +14,7 @@ class PackListWidget(widgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-        layout.addWidget(widgets.QLabel(text=self.tr("Asset packs")))
+        # layout.addWidget(widgets.QLabel(text=self.tr("Asset packs")))
 
         self.view = widgets.QTableWidget()
         layout.addWidget(self.view)
