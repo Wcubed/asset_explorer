@@ -45,12 +45,9 @@ class MainWindow(widgets.QWidget):
         asset_dir_layout.addWidget(self.asset_dirs)
 
     def add_new_asset_folder(self):
-        new_dir = self.directory_explorer.get_selected_directory()
+        new_dirs = self.directory_explorer.get_selected_directories()
 
-        if new_dir == "":
-            return
-
-        self.data.add_asset_dir(new_dir)
+        self.data.add_asset_dirs(new_dirs)
 
     def scan_asset_directory(self, path):
         # TODO: this should probably be put in the DATA class.

@@ -1,3 +1,6 @@
+import logging
+
+
 class Data:
     def __init__(self):
         self._asset_dirs = []
@@ -8,3 +11,8 @@ class Data:
         #   or a parent directory.
         #   return an exception when that happens.
         self._asset_dirs.append(new_dir)
+
+    def add_asset_dirs(self, new_dirs: [str]):
+        self._asset_dirs.extend(new_dirs)
+
+        logging.info(self._asset_dirs)

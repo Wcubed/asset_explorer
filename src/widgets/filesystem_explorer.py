@@ -46,6 +46,9 @@ class FilesystemExplorer(widgets.QWidget):
         self.view.setColumnHidden(2, True)
         self.view.setColumnHidden(3, True)
 
+        # Allow multiselect using shift and ctrl.
+        self.view.setSelectionMode(self.view.ExtendedSelection)
+
         self.view.doubleClicked.connect(self.on_double_click_directory)
 
         layout.addWidget(self.view)
@@ -72,13 +75,14 @@ class FilesystemExplorer(widgets.QWidget):
         self.model.setRootPath(self.current_directory.absolutePath())
         self.view.setRootIndex(self.model.index(self.current_directory.absolutePath()))
 
-    def get_selected_directory(self):
+    def get_selected_directories(self) -> [str]:
         """
-        Returns the path to the current selected directory, or an empty string when nothing is selected.
+        Returns a list of current selected directories, or an empty list when noting is selected.
         """
-        selected = self.view.selectedIndexes()
+        selected_idxs = self.view.selectedIndexes()
+        selected = []
 
-        if len(selected) != 0:
-            return self.model.filePath(selected.pop())
-        else:
-            return ""
+        for index in selected_idxs:
+            selected.append(self.model.filePath(index))
+
+        return selected
