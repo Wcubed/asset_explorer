@@ -2,7 +2,7 @@ import PyQt5.QtCore as core
 import PyQt5.QtWidgets as widgets
 
 
-class AssetPacks(widgets.QWidget):
+class PackListWidget(widgets.QWidget):
     NAME_COL = 0
     PATH_COL = 1
 

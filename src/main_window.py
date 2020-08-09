@@ -4,7 +4,7 @@ import PyQt5.QtWidgets as widgets
 from PyQt5.QtCore import QDirIterator, QDir
 
 import data
-from widgets import filesystem_explorer, asset_packs
+from widgets import filesystem_explorer, pack_list_widget
 
 ASSET_FILE_EXTENSIONS = ["*.png"]
 
@@ -22,11 +22,17 @@ class MainWindow(widgets.QWidget):
 
         self.setWindowTitle(self.tr("Asset Explorer"))
 
+        self.main_splitter = widgets.QSplitter()
+        layout.addWidget(self.main_splitter)
+        self.main_splitter.setHandleWidth(10)
+
         explorer_column = widgets.QWidget()
         explorer_layout = widgets.QVBoxLayout()
         explorer_layout.setContentsMargins(0, 0, 0, 0)
         explorer_column.setLayout(explorer_layout)
-        layout.addWidget(explorer_column)
+        self.main_splitter.addWidget(explorer_column)
+        # Explorer shouldn't auto-stretch.
+        self.main_splitter.setStretchFactor(0, 0)
 
         self.directory_explorer = filesystem_explorer.FilesystemExplorer()
         explorer_layout.addWidget(self.directory_explorer)
@@ -35,8 +41,9 @@ class MainWindow(widgets.QWidget):
         new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
         explorer_layout.addWidget(new_asset_dir_button)
 
-        self.asset_dirs = asset_packs.AssetPacks()
-        layout.addWidget(self.asset_dirs)
+        self.asset_dirs = pack_list_widget.PackListWidget()
+        self.main_splitter.addWidget(self.asset_dirs)
+        self.main_splitter.setStretchFactor(1, 1)
 
         # Make sure the view updates when the data structure grows.
         self.data.pack_added.connect(self.asset_dirs.add_pack)
