@@ -66,7 +66,10 @@ class FilesystemExplorer(widgets.QWidget):
         Make a double clicked directory the new root.
         """
         path = self.model.filePath(index)
-        self.current_directory.cd(path)
+        self.cd_to_directory(path)
+
+    def cd_to_directory(self, directory: str):
+        self.current_directory.cd(directory)
 
         self.update_ui()
 
@@ -89,3 +92,6 @@ class FilesystemExplorer(widgets.QWidget):
 
     def clear_selection(self):
         self.view.clearSelection()
+
+    def get_current_directory(self) -> QDir:
+        return self.current_directory

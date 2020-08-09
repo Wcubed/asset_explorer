@@ -1,3 +1,7 @@
+import json
+import logging
+import os
+
 import PyQt5.QtCore as Qcore
 import PyQt5.QtWidgets as Qwidgets
 
@@ -6,10 +10,26 @@ import widgets
 
 
 class MainWindow(Qwidgets.QWidget):
+    CONFIG_FILE_NAME = "config.json"
+    # Version number to keep track of breaking changes in config files.
+    CONFIG_VERSION = 1
+
+    # Keys for the configuration dictionary.
+    CFG_KEY_VERSION = "config_version"
+    CFG_KEY_PACKS = "asset_packs"
+    CFG_KEY_LAST_DIRECTORY = "last_directory"
+
     def __init__(self):
         super().__init__()
 
+        # The application name influences where the config file is stored.
+        Qcore.QCoreApplication.setApplicationName("asset_explorer")
+
         self.data = data.Data()
+        # Application config goes into appdata (or platform equivalent)
+        # The asset pack configuration will be saved in their respective directories.
+        self.config_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.AppConfigLocation)
+        self.config_file = self.config_dir + "/" + self.CONFIG_FILE_NAME
 
         # ---- Layout ----
 
@@ -52,11 +72,18 @@ class MainWindow(Qwidgets.QWidget):
         self.data.pack_added.connect(self.pack_list_widget.add_pack)
         self.pack_list_widget.selection_changed.connect(self.on_pack_selection_changed)
 
+        # ----
+
+        self.load_config()
+
     def add_new_asset_packs(self):
         new_dirs = self.directory_explorer.get_selected_directories()
 
         self.data.add_asset_packs(new_dirs)
         self.directory_explorer.clear_selection()
+
+        # Save the newly selected asset packs.
+        self.save_config()
 
     @Qcore.pyqtSlot()
     def on_pack_selection_changed(self):
@@ -67,3 +94,51 @@ class MainWindow(Qwidgets.QWidget):
             assets += self.data.get_pack(folder).get_assets()
 
         self.asset_list_widget.show_assets(assets)
+
+    def load_config(self):
+        try:
+            with open(self.config_file, 'r') as f:
+                logging.info("Loading config from: \"{}\"".format(self.config_file))
+
+                # TODO: What to do if loading fails?
+                #       currently it will throw an exception.
+                config = json.load(f)
+
+                version = config[self.CFG_KEY_VERSION]
+                # Check if we know this config version.
+                if version != self.CONFIG_VERSION:
+                    # TODO: what to do if the versions don't match?
+                    logging.info(
+                        "Unknown config version found: \'{}\', "
+                        "expected: \'{}\'. Will attempt to load anyway.".format(version,
+                                                                                self.CONFIG_VERSION))
+
+                # Restore all asset packs.
+                asset_packs = config[self.CFG_KEY_PACKS]
+                for pack in asset_packs:
+                    self.data.add_asset_pack(Qcore.QDir(pack))
+
+                # Restore the last directory the explorer was at.
+                # self.directory_explorer.cd_to_directory(config[self.CFG_KEY_LAST_DIRECTORY])
+        except IOError as e:
+            # We could not load the file.
+            # todo: show an appropriate log message for the reason.
+            #       don't show a message if the file simply does not yet exist.
+            logging.warning("Could not load config file: \"{}\". Reason: {}".format(self.config_file, e))
+
+    def save_config(self):
+        # TODO: save a config version number, for if we need to convert config formats.
+        logging.info("Saving config to: \"{}\"".format(self.config_file))
+
+        # Make sure the directories exist.
+        if not os.path.isdir(self.config_dir):
+            os.makedirs(self.config_dir)
+
+        config = {
+            self.CFG_KEY_VERSION: self.CONFIG_VERSION,
+            self.CFG_KEY_PACKS: list(self.data.get_packs().keys()),
+            self.CFG_KEY_LAST_DIRECTORY: self.directory_explorer.get_current_directory().absolutePath()
+        }
+
+        with open(self.config_file, 'w') as f:
+            json.dump(config, f)

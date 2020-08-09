@@ -47,3 +47,6 @@ class Data(Qcore.QObject):
     def get_pack(self, path: Qcore.QDir) -> AssetPack:
         # TODO: throw exception if we don't have that pack.
         return self._asset_packs[path.absolutePath()]
+
+    def get_packs(self) -> dict:
+        return self._asset_packs

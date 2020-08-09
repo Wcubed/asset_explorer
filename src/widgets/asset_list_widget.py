@@ -8,8 +8,8 @@ class AssetListWidget(Qwidgets.QWidget):
     IMAGE_COL = 0
     NAME_COL = 1
 
-    # Height in px of the displayed images.
-    IMAGE_HEIGHT = 100
+    # Width and height in px of the displayed images.
+    IMAGE_SIZE = 100
 
     def __init__(self):
         super().__init__()
@@ -23,14 +23,15 @@ class AssetListWidget(Qwidgets.QWidget):
 
         self.view.insertColumn(self.IMAGE_COL)
         self.view.setHorizontalHeaderItem(self.IMAGE_COL, Qwidgets.QTableWidgetItem(""))
+        self.view.setColumnWidth(self.IMAGE_COL, self.IMAGE_SIZE)
 
         self.view.insertColumn(self.NAME_COL)
         self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem("Name"))
         self.view.horizontalHeader().setSectionResizeMode(self.NAME_COL, Qwidgets.QHeaderView.Stretch)
 
-        # Make the rows IMAGE_HEIGHT pixels high.
+        # Make the rows IMAGE_SIZE pixels high.
         self.view.verticalHeader().hide()
-        self.view.verticalHeader().setDefaultSectionSize(self.IMAGE_HEIGHT)
+        self.view.verticalHeader().setDefaultSectionSize(self.IMAGE_SIZE)
 
         # Disable editing.
         self.view.setEditTriggers(self.view.NoEditTriggers)
@@ -51,5 +52,5 @@ class AssetListWidget(Qwidgets.QWidget):
 
             # TODO: image loading and thumbnail generation should be done asynchronously.
             item = Qwidgets.QTableWidgetItem()
-            item.setData(Qcore.Qt.DecorationRole, asset.load_thumbnail_cached(self.IMAGE_HEIGHT))
+            item.setData(Qcore.Qt.DecorationRole, asset.load_thumbnail_cached(self.IMAGE_SIZE))
             self.view.setItem(0, self.IMAGE_COL, item)

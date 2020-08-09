@@ -25,6 +25,12 @@ class Asset:
             return self.image
 
     def load_thumbnail_cached(self, height: int) -> QPixmap:
+        # TODO: do we want to save thumbnails to disc? Say, to: QStandardPaths::CacheLocation/thumbnails.
+        #   We could hash the asset path and use that as the filename.
+
+        # TODO: also, make the thumbnail fit in the width.
+        #       so the thumbnail fits in a square.
+        #       to that end, don't pass "height" but "size"
         if self.thumbnail and height == self.thumbnail_height:
             # We already have a thumbnail, and it is the right size.
             return self.thumbnail
