@@ -1,10 +1,10 @@
-import PyQt5.QtWidgets as widgets
+import PyQt5.QtWidgets as Qwidgets
 
 import data
-from widgets import filesystem_explorer, pack_list_widget
+import widgets
 
 
-class MainWindow(widgets.QWidget):
+class MainWindow(Qwidgets.QWidget):
     def __init__(self):
         super().__init__()
 
@@ -12,36 +12,43 @@ class MainWindow(widgets.QWidget):
 
         # ---- Layout ----
 
-        layout = widgets.QHBoxLayout()
+        layout = Qwidgets.QHBoxLayout()
         self.setLayout(layout)
 
         self.setWindowTitle(self.tr("Asset Explorer"))
 
-        self.main_splitter = widgets.QSplitter()
+        self.main_splitter = Qwidgets.QSplitter()
         layout.addWidget(self.main_splitter)
         self.main_splitter.setHandleWidth(10)
 
-        explorer_column = widgets.QWidget()
-        explorer_layout = widgets.QVBoxLayout()
+        explorer_column = Qwidgets.QWidget()
+        explorer_layout = Qwidgets.QVBoxLayout()
         explorer_layout.setContentsMargins(0, 0, 0, 0)
         explorer_column.setLayout(explorer_layout)
         self.main_splitter.addWidget(explorer_column)
         # Explorer shouldn't auto-stretch.
         self.main_splitter.setStretchFactor(0, 0)
 
-        self.directory_explorer = filesystem_explorer.FilesystemExplorer()
+        self.directory_explorer = widgets.FilesystemExplorer()
         explorer_layout.addWidget(self.directory_explorer)
 
-        new_asset_dir_button = widgets.QPushButton(text=self.tr("Add selected folders as packs"))
-        new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
+        new_asset_dir_button = Qwidgets.QPushButton(text=self.tr("Add selected folders as packs"))
         explorer_layout.addWidget(new_asset_dir_button)
 
-        self.asset_dirs = pack_list_widget.PackListWidget()
-        self.main_splitter.addWidget(self.asset_dirs)
-        self.main_splitter.setStretchFactor(1, 1)
+        self.pack_list_widget = widgets.PackListWidget()
+        self.main_splitter.addWidget(self.pack_list_widget)
+        # Asset table shouldn't auto stretch.
+        self.main_splitter.setStretchFactor(1, 0)
 
+        self.asset_list_widget = widgets.AssetListWidget()
+        self.main_splitter.addWidget(self.asset_list_widget)
+        self.main_splitter.setStretchFactor(2, 1)
+
+        # ---- Connections ----
+
+        new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
         # Make sure the view updates when the data structure grows.
-        self.data.pack_added.connect(self.asset_dirs.add_pack)
+        self.data.pack_added.connect(self.pack_list_widget.add_pack)
 
     def add_new_asset_packs(self):
         new_dirs = self.directory_explorer.get_selected_directories()
