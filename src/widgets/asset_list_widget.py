@@ -50,5 +50,5 @@ class AssetListWidget(Qwidgets.QWidget):
             self.view.setItem(0, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
 
             item = Qwidgets.QTableWidgetItem()
-            item.setData(Qcore.Qt.DecorationRole, asset.load_thumbnail_cached())
+            item.setData(Qcore.Qt.DecorationRole, asset.load_thumbnail_cached(self.IMAGE_HEIGHT))
             self.view.setItem(0, self.IMAGE_COL, item)
