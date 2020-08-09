@@ -1,3 +1,4 @@
+import PyQt5.QtCore as Qcore
 import PyQt5.QtWidgets as Qwidgets
 
 from data import Asset
@@ -6,6 +7,9 @@ from data import Asset
 class AssetListWidget(Qwidgets.QWidget):
     IMAGE_COL = 0
     NAME_COL = 1
+
+    # Height in px of the displayed images.
+    IMAGE_HEIGHT = 100
 
     def __init__(self):
         super().__init__()
@@ -24,9 +28,9 @@ class AssetListWidget(Qwidgets.QWidget):
         self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem("Name"))
         self.view.horizontalHeader().setSectionResizeMode(self.NAME_COL, Qwidgets.QHeaderView.Stretch)
 
+        # Make the rows IMAGE_HEIGHT pixels high.
         self.view.verticalHeader().hide()
-
-        self.view.setEditTriggers(self.view.NoEditTriggers)
+        self.view.verticalHeader().setDefaultSectionSize(self.IMAGE_HEIGHT)
 
         # Disable editing.
         self.view.setEditTriggers(self.view.NoEditTriggers)
@@ -44,3 +48,7 @@ class AssetListWidget(Qwidgets.QWidget):
         for asset in assets:
             self.view.insertRow(0)
             self.view.setItem(0, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
+
+            item = Qwidgets.QTableWidgetItem()
+            item.setData(Qcore.Qt.DecorationRole, asset.load_thumbnail_cached())
+            self.view.setItem(0, self.IMAGE_COL, item)

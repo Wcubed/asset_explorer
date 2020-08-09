@@ -21,4 +21,4 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - PyQt5 (pip/pip3 install PyQt5)
     - Docs: https://doc.qt.io/qtforpython/contents.html
     - Class reference: https://doc.bccnsoft.com/docs/PyQt5/class_reference.html
-    - Or in case you have the QT assistant installed, you can use that as a reference.
+    - Or in case you have the QT5 assistant installed, you can use that as a reference.
