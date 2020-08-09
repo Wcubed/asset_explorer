@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QFileInfo
+from PyQt5.QtCore import QFileInfo, Qt
 from PyQt5.QtGui import QPixmap
 
 
@@ -30,8 +30,8 @@ class Asset:
             return self.thumbnail
 
         image = self.load_image_cached()
-        # Scale with preserved aspect ratio.
-        self.thumbnail = image.scaledToHeight(height)
+        # Scale with preserved aspect ratio, and use bilinear filtering.
+        self.thumbnail = image.scaledToHeight(height, Qt.SmoothTransformation)
         self.thumbnail_height = height
 
         return self.thumbnail

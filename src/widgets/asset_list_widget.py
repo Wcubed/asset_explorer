@@ -49,6 +49,7 @@ class AssetListWidget(Qwidgets.QWidget):
             self.view.insertRow(0)
             self.view.setItem(0, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
 
+            # TODO: image loading and thumbnail generation should be done asynchronously.
             item = Qwidgets.QTableWidgetItem()
             item.setData(Qcore.Qt.DecorationRole, asset.load_thumbnail_cached(self.IMAGE_HEIGHT))
             self.view.setItem(0, self.IMAGE_COL, item)
