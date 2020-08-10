@@ -18,8 +18,10 @@ class AssetWidget(Qwidgets.QWidget):
 
         self._display = Qwidgets.QLabel()
         self._display.setFixedSize(Qcore.QSize(self.IMAGE_SIZE, self.IMAGE_SIZE))
-
         layout.addWidget(self._display)
+
+        self._name = Qwidgets.QLabel(self._asset.get_name())
+        layout.addWidget(self._name)
 
     def load_and_show_image(self):
         """
