@@ -34,7 +34,7 @@ class AssetPack:
             path = files.next()
             asset = Asset(path)
 
-            self.assets[asset.get_absolute_path()] = asset
+            self.assets[asset.get_hash()] = asset
 
         logging.info("Found {} assets in pack \"{}\"".format(len(self.assets), self.name))
 

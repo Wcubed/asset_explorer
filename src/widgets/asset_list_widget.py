@@ -6,7 +6,7 @@ import PyQt5.QtWidgets as Qwidgets
 class AssetListWidget(Qwidgets.QWidget):
     IMAGE_COL = 0
     NAME_COL = 1
-    ABSOLUTE_PATH_COL = 2
+    HASH_COL = 2
 
     # Width and height in px of the displayed images.
     IMAGE_SIZE = 100
@@ -36,9 +36,9 @@ class AssetListWidget(Qwidgets.QWidget):
         self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem("Name"))
         self.view.horizontalHeader().setSectionResizeMode(self.NAME_COL, Qwidgets.QHeaderView.Stretch)
 
-        # The full path column is only for internal use.
-        self.view.insertColumn(self.ABSOLUTE_PATH_COL)
-        self.view.setColumnHidden(self.ABSOLUTE_PATH_COL, True)
+        # The asset hash column is only for internal use.
+        self.view.insertColumn(self.HASH_COL)
+        self.view.setColumnHidden(self.HASH_COL, True)
 
         # Make the rows IMAGE_SIZE pixels high.
         self.view.verticalHeader().hide()
@@ -71,7 +71,7 @@ class AssetListWidget(Qwidgets.QWidget):
         for path, asset in assets.items():
             self.view.insertRow(0)
             self.view.setItem(0, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
-            self.view.setItem(0, self.ABSOLUTE_PATH_COL, Qwidgets.QTableWidgetItem(asset.get_absolute_path()))
+            self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(str(asset.get_hash())))
             # The thumbnails will be loaded when the item is visible.
 
         self.load_visible_asset_thumbnails()
@@ -106,8 +106,8 @@ class AssetListWidget(Qwidgets.QWidget):
 
         for row in range(top_visible_row, bottom_visible_plus_one):
             # Load the thumbnail.
-            path = self.view.item(row, self.ABSOLUTE_PATH_COL).text()
-            asset = self.assets[path]
+            hash_key = int(self.view.item(row, self.HASH_COL).text())
+            asset = self.assets[hash_key]
 
             # TODO: image loading and thumbnail generation should be done asynchronously.
             item = Qwidgets.QTableWidgetItem()

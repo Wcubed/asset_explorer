@@ -6,10 +6,8 @@ from data import AssetPack
 
 
 class Data(Qcore.QObject):
-    """
-    Emitted when a new asset pack has been added.
-    (name, asset_count, pack_directory)
-    """
+    # Emitted when a new asset pack has been added.
+    # (name, asset_count, pack_directory)
     pack_added = Qcore.pyqtSignal(str, int, Qcore.QDir)
 
     def __init__(self):
