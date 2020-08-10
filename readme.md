@@ -1,3 +1,6 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Wcubed_asset_explorer&metric=alert_status)](https://sonarcloud.io/dashboard?id=Wcubed_asset_explorer)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Wcubed_asset_explorer&metric=code_smells)](https://sonarcloud.io/dashboard?id=Wcubed_asset_explorer)
+
 This is an attempt to make it easy to search for a particular kind of item or image in a large collection of icons.
 
 # Feature list
