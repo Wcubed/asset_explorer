@@ -14,7 +14,7 @@ class AssetListWidget(Qwidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        # path -> Asset, dictonary of the assets to be displayed.
+        # hash -> Asset, dictionary of the assets to be displayed.
         self.assets = {}
 
         # ---- layout ----

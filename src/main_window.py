@@ -68,7 +68,12 @@ class MainWindow(Qwidgets.QMainWindow):
 
         self.asset_list_widget = widgets.AssetListWidget()
         self.main_splitter.addWidget(self.asset_list_widget)
-        self.main_splitter.setStretchFactor(2, 1)
+        self.main_splitter.setStretchFactor(2, 0)
+
+        # This is for testing the flow grid.
+        self.asset_flow_grid = widgets.AssetFlowGridWidget()
+        self.main_splitter.addWidget(self.asset_flow_grid)
+        self.main_splitter.setStretchFactor(3, 1)
 
         # ---- Connections ----
 
@@ -109,6 +114,9 @@ class MainWindow(Qwidgets.QMainWindow):
             assets.update(self.data.get_pack(folder).get_assets())
 
         self.asset_list_widget.show_assets(assets)
+
+        # Testing for the asset flow grid.
+        self.asset_flow_grid.show_assets(assets)
 
     def load_config(self):
         try:
