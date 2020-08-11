@@ -6,6 +6,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 # Feature list
 ## Required
 
+- [ ] Add a folder entry bar above the file explorer.
 - [x] Add an asset pack (folder) to the library.
 - [ ] Remove an asset pack (folder) from the library.
 - [x] Save the asset packs loaded into one of the common user directories. (in QStandardPaths::AppConfigLocation?)
