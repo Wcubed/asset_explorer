@@ -22,6 +22,9 @@ class Data(Qcore.QObject):
         #   or a parent directory.
         #   return an exception when that happens.
 
+        # TODO: maybe we dont' want to scan every file on start? just use the saved asset list (when we have it)?
+        #       Or scan it in a separate thread?
+
         new_pack = AssetPack(pack_path)
 
         # Make sure this isn't a duplicate.

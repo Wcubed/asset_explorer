@@ -2,37 +2,82 @@ import math
 import typing
 
 import PyQt5.QtCore as Qcore
+import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
 
 from .asset_widget import AssetWidget
 
 
-class AssetFlowGridWidget(Qwidgets.QScrollArea):
-    def __init__(self):
+class AssetFlowGridWidget(Qwidgets.QFrame):
+    def __init__(self, item_width: int, item_height: int):
         super().__init__()
 
         # hash -> Asset, dictionary of the assets to be displayed.
         self._assets = {}
+        # [y][x] grid of asset widgets.
+        self._asset_grid = []
+        self._item_width = item_width
+        self._item_height = item_height
 
-        main_widget = Qwidgets.QWidget()
-        # TODO: fill in actual asset widget values.
-        self._layout = FlowGridLayout(200, 200)
-        main_widget.setLayout(self._layout)
+        self._last_items_in_width = 0
 
-        self.setWidget(main_widget)
+        # ---- Layout ----
 
-        # Scrollbar only in vertical direction.
-        # And allow the containing widget to become as tall as needed.
-        self.setWidgetResizable(True)
-        self.setHorizontalScrollBarPolicy(Qcore.Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qcore.Qt.ScrollBarAsNeeded)
-        self.setMinimumWidth(self._layout.minimumSize().width())
+        self.setFrameShape(Qwidgets.QFrame.StyledPanel)
+
+        self._layout = Qwidgets.QHBoxLayout()
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(self._layout)
+
+        self._asset_grid_widget = Qwidgets.QWidget()
+        self._asset_layout = Qwidgets.QGridLayout()
+        self._asset_grid_widget.setLayout(self._asset_layout)
+        self._layout.addWidget(self._asset_grid_widget)
+        self._layout.setStretch(0, 1)
+
+        test_label = Qwidgets.QLabel(text="bladiebla")
+        self._asset_layout.addWidget(test_label, 0, 0)
+
+        self._scrollbar = Qwidgets.QScrollBar(Qcore.Qt.Vertical)
+        self._layout.addWidget(self._scrollbar)
+        self._layout.setStretch(1, 0)
+
+        # Our minimum size is 1 asset + horizontal scrollbar
+        self.setMinimumWidth(self._item_width + self._scrollbar.minimumWidth())
+        self.setMinimumHeight(self._item_height)
+
+        # TODO: Fill with as much asset widgets as needed to fill the size, but no more.
+        #   and adjust scrollbar to match how many didn't fit.
+        # TODO: when the user scrolls, we don't actually scroll the asset widgets.
+        #       we simply set new assets to the existing widgets.
 
     def show_assets(self, assets: dict):
         self._assets = assets
 
-        for asset in self._assets.values():
-            self._layout.addWidget(AssetWidget(asset))
+    def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+
+        # Don't overflow horizontally (floor).
+        items_in_width = math.floor(event.size().width() / self._item_width)
+        # Do overflow vertically down (ceil).
+        items_in_height = math.ceil(event.size().height() / self._item_height)
+
+        # We do not remove excess horizontal or vertical widgets.
+        # As the fact that we generated them means that we needed them once,
+        # and that means we might have to use them again. (That, and it doesn't cost that much to keep them).
+
+        # Add any extra widgets that now fit.
+        for y in range(0, items_in_height):
+            if y >= len(self._asset_grid):
+                self._asset_grid.append([])
+
+            for x in range(0, items_in_width):
+                if x >= len(self._asset_grid[y]):
+                    new_widget = AssetWidget()
+                    self._asset_grid[y].append(new_widget)
+                    self._asset_layout.addWidget(new_widget, y, x)
+
+        self._last_items_in_width = items_in_width
 
 
 class FlowGridLayout(Qwidgets.QLayout):
@@ -84,6 +129,15 @@ class FlowGridLayout(Qwidgets.QLayout):
         else:
             return self._items.pop(index)
 
+    def clear(self):
+        """Remove all widgets."""
+        for item in self._items:
+            item.widget().deleteLater()
+
+        self._items.clear()
+
+        self.invalidate()
+
     def count(self) -> int:
         return len(self._items)
 
@@ -122,7 +176,7 @@ class FlowGridLayout(Qwidgets.QLayout):
             # We do not scale the items, so we have to round down.
             items_in_width = math.floor(width / self._item_width)
 
-            if items_in_width != self._cached_items_in_width:
+            if items_in_width != self._cached_items_in_width or items_in_width == 0:
                 if items_in_width == 0:
                     # We want to display a minimum of 1 item.
                     items_in_width = 1
