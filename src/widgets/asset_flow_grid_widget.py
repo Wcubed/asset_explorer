@@ -9,15 +9,25 @@ from .asset_widget import AssetWidget
 
 
 class AssetFlowGridWidget(Qwidgets.QFrame):
-    def __init__(self, item_width: int, item_height: int):
+    """
+
+    """
+    # Weird spacing in the x direction that I don't know how to get rid of,
+    # so we have to take it into account.
+    STRANGE_PADDING_X = 7
+    # Weird spacing in the y direction that I don't know how to get rid of,
+    # so we have to take it into account.
+    STRANGE_PADDING_Y = 7
+
+    def __init__(self):
         super().__init__()
 
         # hash -> Asset, dictionary of the assets to be displayed.
         self._assets = {}
         # [y][x] grid of asset widgets.
         self._asset_grid = []
-        self._item_width = item_width
-        self._item_height = item_height
+        self._item_width = AssetWidget.WIDTH
+        self._item_height = AssetWidget.HEIGHT
 
         self._last_items_in_width = 0
 
@@ -25,22 +35,27 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
 
         self.setFrameShape(Qwidgets.QFrame.StyledPanel)
 
-        self._layout = Qwidgets.QHBoxLayout()
+        self._layout = Qwidgets.QGridLayout()
         self._layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self._layout)
 
+        # Create the widget that will contain the asset grid.
         self._asset_grid_widget = Qwidgets.QWidget()
         self._asset_layout = Qwidgets.QGridLayout()
         self._asset_grid_widget.setLayout(self._asset_layout)
-        self._layout.addWidget(self._asset_grid_widget)
-        self._layout.setStretch(0, 1)
 
-        test_label = Qwidgets.QLabel(text="bladiebla")
-        self._asset_layout.addWidget(test_label, 0, 0)
+        self._asset_layout.setContentsMargins(0, 0, 0, 0)
+        self._asset_layout.setSpacing(0)
+
+        self._layout.addWidget(self._asset_grid_widget, 0, 0)
+
+        # Stretch the 2nd column and row, so the asset grid widget always stays it's minimum size.
+        self._layout.setColumnStretch(1, 1)
+        self._layout.setRowStretch(1, 1)
 
         self._scrollbar = Qwidgets.QScrollBar(Qcore.Qt.Vertical)
-        self._layout.addWidget(self._scrollbar)
-        self._layout.setStretch(1, 0)
+        # Stretch the scrollbar across 2 rows.
+        self._layout.addWidget(self._scrollbar, 0, 2, 2, 1)
 
         # Our minimum size is 1 asset + horizontal scrollbar
         self.setMinimumWidth(self._item_width + self._scrollbar.minimumWidth())
@@ -57,10 +72,14 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         super().resizeEvent(event)
 
+        grid_width = event.size().width() - self._scrollbar.width() - self.STRANGE_PADDING_X
+        grid_height = event.size().height() - self.STRANGE_PADDING_Y
+
         # Don't overflow horizontally (floor).
-        items_in_width = math.floor(event.size().width() / self._item_width)
-        # Do overflow vertically down (ceil).
-        items_in_height = math.ceil(event.size().height() / self._item_height)
+        items_in_width = math.floor(grid_width / self._item_width)
+        # TODO: Do overflow vertically down (ceil).
+        #       Curently this compresses instead of overflowing, so we `floor` instead at the moment.
+        items_in_height = math.floor(grid_height / self._item_height)
 
         # We do not remove excess horizontal or vertical widgets.
         # As the fact that we generated them means that we needed them once,
@@ -70,12 +89,34 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         for y in range(0, items_in_height):
             if y >= len(self._asset_grid):
                 self._asset_grid.append([])
+                # No stretching.
+                self._asset_layout.setRowStretch(y, 0)
 
             for x in range(0, items_in_width):
                 if x >= len(self._asset_grid[y]):
                     new_widget = AssetWidget()
                     self._asset_grid[y].append(new_widget)
-                    self._asset_layout.addWidget(new_widget, y, x)
+                    self._asset_layout.addWidget(new_widget, y, x, alignment=Qcore.Qt.AlignLeft)
+                    # No stretching
+                    self._asset_layout.setColumnStretch(x, 0)
+
+        # Remove unneeded vertical widgets.
+        # From bottom to top, to make sure we don't walk over things we just deleted.
+        for extra_y in reversed(range(items_in_height, len(self._asset_grid))):
+            for widget in self._asset_grid[extra_y]:
+                self._asset_layout.removeWidget(widget)
+                widget.deleteLater()
+            self._asset_grid.pop(extra_y)
+
+        # Remove unneeded horizontal widgets.
+        # TODO: as it currently stands, causes error because the underlying c/c++ type has been removed.
+        #    (on `removeWidget)
+        # for row in self._asset_grid:
+        #     # From right to left, to make sure we don't walk over things we just deleted.
+        #     for extra_x in reversed(range(items_in_width, len(row))):
+        #         widget = row[extra_x]
+        #         self._asset_layout.removeWidget(widget)
+        #         widget.deleteLater()
 
         self._last_items_in_width = items_in_width
 

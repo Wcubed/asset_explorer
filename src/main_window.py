@@ -71,7 +71,7 @@ class MainWindow(Qwidgets.QMainWindow):
         self.main_splitter.setStretchFactor(2, 0)
 
         # This is for testing the flow grid.
-        self.asset_flow_grid = widgets.AssetFlowGridWidget(200, 200)
+        self.asset_flow_grid = widgets.AssetFlowGridWidget()
         self.main_splitter.addWidget(self.asset_flow_grid)
         self.main_splitter.setStretchFactor(3, 1)
 

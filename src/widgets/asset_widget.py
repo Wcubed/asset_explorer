@@ -7,6 +7,10 @@ from data import Asset
 class AssetWidget(Qwidgets.QWidget):
     # Width and height in px of the displayed images.
     IMAGE_SIZE = 100
+    MARGIN = 4
+
+    WIDTH = IMAGE_SIZE + MARGIN * 2
+    HEIGHT = IMAGE_SIZE + MARGIN * 2
 
     def __init__(self):
         super().__init__()
@@ -14,14 +18,18 @@ class AssetWidget(Qwidgets.QWidget):
         self._asset = None
 
         layout = Qwidgets.QVBoxLayout()
+        layout.setContentsMargins(self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN)
         self.setLayout(layout)
+
+        self.setStyleSheet("background: green;")
+        self.setSizePolicy(Qwidgets.QSizePolicy.Fixed, Qwidgets.QSizePolicy.Fixed)
 
         self._display = Qwidgets.QLabel()
         self._display.setFixedSize(Qcore.QSize(self.IMAGE_SIZE, self.IMAGE_SIZE))
         layout.addWidget(self._display)
 
-        self._name = Qwidgets.QLabel(text="test")
-        layout.addWidget(self._name)
+        # self._name = Qwidgets.QLabel(text="test")
+        # layout.addWidget(self._name)
 
     def show_asset(self, asset: Asset):
         """
@@ -31,4 +39,4 @@ class AssetWidget(Qwidgets.QWidget):
         self._asset = asset
 
         self._display.setPixmap(self._asset.load_thumbnail_cached(self.IMAGE_SIZE))
-        self._name.setText(self._asset.get_name())
+        # self._name.setText(self._asset.get_name())
