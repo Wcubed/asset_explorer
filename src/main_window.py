@@ -61,7 +61,7 @@ class MainWindow(Qwidgets.QMainWindow):
         new_asset_dir_button = Qwidgets.QPushButton(text=self.tr("Add selected folders as packs"))
         explorer_layout.addWidget(new_asset_dir_button)
 
-        self.pack_list_widget = widgets.PackListWidget()
+        self.pack_list_widget = widgets.PackListWidget(self.data)
         self.main_splitter.addWidget(self.pack_list_widget)
         # Asset table shouldn't auto stretch.
         self.main_splitter.setStretchFactor(1, 0)
@@ -78,8 +78,6 @@ class MainWindow(Qwidgets.QMainWindow):
         # ---- Connections ----
 
         new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
-        # Make sure the view updates when the data structure grows.
-        self.data.pack_added.connect(self.pack_list_widget.add_pack)
         self.pack_list_widget.selection_changed.connect(self.on_pack_selection_changed)
 
         # ----
@@ -110,8 +108,8 @@ class MainWindow(Qwidgets.QMainWindow):
         # Show the selected asset packs in the asset list.
         selected_packs = self.pack_list_widget.get_selected_packs()
         assets = {}
-        for folder in selected_packs:
-            assets.update(self.data.get_pack(folder).get_assets())
+        for pack in selected_packs:
+            assets.update(pack.get_assets())
 
         self.asset_list_widget.show_assets(assets)
 
@@ -157,9 +155,13 @@ class MainWindow(Qwidgets.QMainWindow):
         if not os.path.isdir(self.config_dir):
             os.makedirs(self.config_dir)
 
+        pack_dirs = []
+        for pack in self.data.get_packs().values():
+            pack_dirs.append(str(pack.get_path()))
+
         config = {
             self.CFG_KEY_VERSION: self.CONFIG_VERSION,
-            self.CFG_KEY_PACKS: list(self.data.get_packs().keys()),
+            self.CFG_KEY_PACKS: pack_dirs,
             self.CFG_KEY_LAST_DIRECTORY: self.directory_explorer.get_current_directory().absolutePath()
         }
 

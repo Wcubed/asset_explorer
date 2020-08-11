@@ -12,10 +12,11 @@ class AssetPack:
     FILE_EXTENSIONS = ["*.png"]
 
     def __init__(self, path: QDir):
-        self.path = path
-        self.name = path.dirName()
+        self._path = path
+        self._hash = hash(self.get_path())
+        self._name = path.dirName()
 
-        self.assets = {}
+        self._assets = {}
 
     def scan_pack_directory(self):
         """
@@ -26,20 +27,29 @@ class AssetPack:
                 That way, one wouldn't loose the tags / other settings on it.
         """
 
-        self.assets = {}
+        self._assets = {}
 
-        files = QDirIterator(self.path.absolutePath(), self.FILE_EXTENSIONS, QDir.Files, QDirIterator.Subdirectories)
+        files = QDirIterator(self._path.absolutePath(), self.FILE_EXTENSIONS, QDir.Files, QDirIterator.Subdirectories)
 
         while files.hasNext():
             path = files.next()
             asset = Asset(path)
 
-            self.assets[asset.get_hash()] = asset
+            self._assets[asset.get_hash()] = asset
 
-        logging.info("Found {} assets in pack \"{}\"".format(len(self.assets), self.name))
+        logging.info("Found {} assets in pack \"{}\"".format(len(self._assets), self._name))
 
     def get_asset_count(self) -> int:
-        return len(self.assets.keys())
+        return len(self._assets.keys())
 
     def get_assets(self) -> [Asset]:
-        return self.assets
+        return self._assets
+
+    def get_hash(self):
+        return self._hash
+
+    def get_path(self):
+        return self._path.absolutePath()
+
+    def get_name(self):
+        return self._name
