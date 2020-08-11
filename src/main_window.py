@@ -79,6 +79,7 @@ class MainWindow(Qwidgets.QMainWindow):
 
         new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
         self.pack_list_widget.selection_changed.connect(self.on_pack_selection_changed)
+        self.data.packs_removed.connect(self.on_packs_removed)
 
         # ----
 
@@ -115,6 +116,9 @@ class MainWindow(Qwidgets.QMainWindow):
 
         # Testing for the asset flow grid.
         self.asset_flow_grid.show_assets(assets)
+
+    def on_packs_removed(self):
+        self.save_config()
 
     def load_config(self):
         try:

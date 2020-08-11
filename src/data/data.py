@@ -9,6 +9,7 @@ class Data(Qcore.QObject):
     # Emitted when a new asset pack has been added.
     # (pack_hash)
     pack_added = Qcore.pyqtSignal(int)
+    packs_removed = Qcore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -50,3 +51,13 @@ class Data(Qcore.QObject):
 
     def get_packs(self) -> dict:
         return self._asset_packs
+
+    def remove_packs(self, pack_hashes: [int]):
+        for pack_hash in pack_hashes:
+            if pack_hash in self._asset_packs:
+                pack = self.get_pack(pack_hash)
+                logging.info("Removing pack: \"{}\"".format(pack.get_name()))
+
+                del self._asset_packs[pack_hash]
+
+        self.packs_removed.emit()

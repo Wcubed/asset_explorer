@@ -61,6 +61,7 @@ class PackListWidget(Qwidgets.QWidget):
         # Update the view when new packs are added.
         self.data.pack_added.connect(self.on_new_pack)
         self.view.itemSelectionChanged.connect(self.on_selection_changed)
+        self.remove_button.clicked.connect(self.on_remove_button_pressed)
 
     @Qcore.pyqtSlot(int)
     def on_new_pack(self, pack_hash: int):
@@ -78,6 +79,30 @@ class PackListWidget(Qwidgets.QWidget):
         self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(str(pack.get_hash())))
 
     @Qcore.pyqtSlot()
+    def on_remove_button_pressed(self):
+        remove_rows = []
+        remove_packs = []
+
+        for item in self.view.selectedItems():
+            if item.column() == self.NAME_COL:
+                pack_hash = int(self.view.item(item.row(), self.HASH_COL).text())
+
+                remove_packs.append(pack_hash)
+                remove_rows.append(item.row())
+
+        # Clear the selection, so that removing rows does not trigger updates of `on_selection_changed`.
+        self.view.clearSelection()
+
+        # Remove the rows after iterating over the selection, so we don't delete while iterating.
+        # Remove them from bottom to top, otherwise the indexes are no longer valid because the rest of the rows
+        # will move up.
+        remove_rows.sort(reverse=True)
+        for row in remove_rows:
+            self.view.removeRow(row)
+
+        self.data.remove_packs(remove_packs)
+
+    @Qcore.pyqtSlot()
     def on_selection_changed(self):
         if len(self.get_selected_packs()) == 0:
             self.remove_button.setEnabled(False)
@@ -89,7 +114,7 @@ class PackListWidget(Qwidgets.QWidget):
     def get_selected_packs(self) -> [AssetPack]:
         selection = []
 
-        # Get the directories of the selections.
+        # Get the hash keys of the selections.
         for item in self.view.selectedItems():
             if item.column() == self.NAME_COL:
                 # Hash column is hidden, therefore not selectable.
