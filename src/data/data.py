@@ -8,7 +8,7 @@ from data import AssetPack
 class Data(Qcore.QObject):
     # Emitted when a new asset pack has been added.
     # (pack_hash)
-    pack_added = Qcore.pyqtSignal(int)
+    pack_added = Qcore.pyqtSignal(str)
     packs_removed = Qcore.pyqtSignal()
 
     def __init__(self):
@@ -45,14 +45,13 @@ class Data(Qcore.QObject):
         for pack in pack_paths:
             self.add_asset_pack(pack)
 
-    def get_pack(self, pack_hash: int) -> AssetPack:
-        # TODO: throw exception if we don't have that pack.
+    def get_pack(self, pack_hash: str) -> AssetPack:
         return self._asset_packs[pack_hash]
 
     def get_packs(self) -> dict:
         return self._asset_packs
 
-    def remove_packs(self, pack_hashes: [int]):
+    def remove_packs(self, pack_hashes: [str]):
         for pack_hash in pack_hashes:
             if pack_hash in self._asset_packs:
                 pack = self.get_pack(pack_hash)

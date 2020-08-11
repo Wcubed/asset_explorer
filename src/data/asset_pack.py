@@ -13,7 +13,10 @@ class AssetPack:
 
     def __init__(self, path: QDir):
         self._path = path
-        self._hash = hash(self.get_path())
+        # Qt does not seem to like the large numbers `hash` generates, so we make it a string instead.
+        # Not as efficient, but works for our purposes,
+        # as we need to use it as a string in some places anyways (tables for example).
+        self._hash = str(hash(self.get_path()))
         self._name = path.dirName()
 
         self._assets = {}
@@ -40,7 +43,7 @@ class AssetPack:
         logging.info("Found {} assets in pack \"{}\"".format(len(self._assets), self._name))
 
     def get_asset_count(self) -> int:
-        return len(self._assets.keys())
+        return len(self._assets)
 
     def get_assets(self) -> [Asset]:
         return self._assets

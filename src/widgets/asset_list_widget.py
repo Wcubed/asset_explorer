@@ -71,7 +71,7 @@ class AssetListWidget(Qwidgets.QWidget):
         for path, asset in assets.items():
             self.view.insertRow(0)
             self.view.setItem(0, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
-            self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(str(asset.get_hash())))
+            self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(asset.get_hash()))
             # The thumbnails will be loaded when the item is visible.
 
         self.load_visible_asset_thumbnails()
@@ -106,7 +106,7 @@ class AssetListWidget(Qwidgets.QWidget):
 
         for row in range(top_visible_row, bottom_visible_plus_one):
             # Load the thumbnail.
-            hash_key = int(self.view.item(row, self.HASH_COL).text())
+            hash_key = self.view.item(row, self.HASH_COL).text()
             asset = self.assets[hash_key]
 
             # TODO: image loading and thumbnail generation should be done asynchronously.

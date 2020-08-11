@@ -22,8 +22,6 @@ class PackListWidget(Qwidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-        # layout.addWidget(widgets.QLabel(text=self.tr("Asset packs")))
-
         self.view = Qwidgets.QTableWidget()
         layout.addWidget(self.view)
 
@@ -63,8 +61,8 @@ class PackListWidget(Qwidgets.QWidget):
         self.view.itemSelectionChanged.connect(self.on_selection_changed)
         self.remove_button.clicked.connect(self.on_remove_button_pressed)
 
-    @Qcore.pyqtSlot(int)
-    def on_new_pack(self, pack_hash: int):
+    @Qcore.pyqtSlot(str)
+    def on_new_pack(self, pack_hash: str):
         pack = self.data.get_pack(pack_hash)
 
         self.view.insertRow(0)
@@ -76,7 +74,7 @@ class PackListWidget(Qwidgets.QWidget):
         path_item = Qwidgets.QTableWidgetItem(pack.get_path())
         self.view.setItem(0, self.PATH_COL, path_item)
 
-        self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(str(pack.get_hash())))
+        self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(pack.get_hash()))
 
     @Qcore.pyqtSlot()
     def on_remove_button_pressed(self):
@@ -85,7 +83,7 @@ class PackListWidget(Qwidgets.QWidget):
 
         for item in self.view.selectedItems():
             if item.column() == self.NAME_COL:
-                pack_hash = int(self.view.item(item.row(), self.HASH_COL).text())
+                pack_hash = self.view.item(item.row(), self.HASH_COL).text()
 
                 remove_packs.append(pack_hash)
                 remove_rows.append(item.row())
@@ -120,6 +118,6 @@ class PackListWidget(Qwidgets.QWidget):
                 # Hash column is hidden, therefore not selectable.
                 # So we have to retrieve the data like this.
                 pack_hash = self.view.item(item.row(), self.HASH_COL).text()
-                selection.append(self.data.get_pack(int(pack_hash)))
+                selection.append(self.data.get_pack(pack_hash))
 
         return selection

@@ -11,7 +11,10 @@ class Asset:
         # Size of the square the current thumbnail fits into.
         self._thumbnail_size = 0
 
-        self._hash = hash(self.get_absolute_path())
+        # Qt does not seem to like the large numbers `hash` generates, so we make it a string instead.
+        # Not as efficient, but works for our purposes,
+        # as we need to use it as a string in some places anyways (tables for example).
+        self._hash = str(hash(self.get_absolute_path()))
 
     def get_hash(self):
         """
