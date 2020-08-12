@@ -9,15 +9,6 @@ from .asset_widget import AssetWidget
 
 
 class AssetFlowGridWidget(Qwidgets.QFrame):
-    """
-
-    """
-    # Weird spacing in the x direction that I don't know how to get rid of,
-    # so we have to take it into account.
-    STRANGE_PADDING_X = 7
-    # Weird spacing in the y direction that I don't know how to get rid of,
-    # so we have to take it into account.
-    STRANGE_PADDING_Y = 7
 
     def __init__(self):
         super().__init__()
@@ -35,27 +26,49 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
 
         self.setFrameShape(Qwidgets.QFrame.StyledPanel)
 
-        self._layout = Qwidgets.QGridLayout()
+        self._layout = Qwidgets.QHBoxLayout()
         self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
         self.setLayout(self._layout)
+
+        # Add a scroll area to allow for overflow.
+        # We are not actually going to use the area's scrollbars,
+        # because by default they scroll the widgets,
+        # and we want to scroll the data while leaving the actual widgets where they are.
+        scroll_area = Qwidgets.QScrollArea()
+        scroll_area.setFrameShape(Qwidgets.QFrame.NoFrame)
+        scroll_area.setVerticalScrollBarPolicy(Qcore.Qt.ScrollBarAlwaysOff)
+        scroll_area.setHorizontalScrollBarPolicy(Qcore.Qt.ScrollBarAlwaysOff)
+        scroll_area.setWidgetResizable(True)
+        self._layout.addWidget(scroll_area)
+
+        # Create the container that keeps our asset grid widget from growing bigger than it's contents.
+        # TODO: there must be a better way to do this.
+        spacer_widget = Qwidgets.QWidget()
+        spacer_layout = Qwidgets.QGridLayout()
+        spacer_widget.setLayout(spacer_layout)
+        scroll_area.setWidget(spacer_widget)
+
+        spacer_layout.setContentsMargins(0, 0, 0, 0)
+        spacer_layout.setSpacing(0)
+        # The widget grid will be at (0, 0), which should not stretch.
+        spacer_layout.setRowStretch(0, 0)
+        spacer_layout.setRowStretch(1, 1)
+        spacer_layout.setColumnStretch(0, 0)
+        spacer_layout.setColumnStretch(1, 1)
 
         # Create the widget that will contain the asset grid.
         self._asset_grid_widget = Qwidgets.QWidget()
+        self._asset_grid_widget.setStyleSheet("background: red;")
         self._asset_layout = Qwidgets.QGridLayout()
         self._asset_grid_widget.setLayout(self._asset_layout)
 
         self._asset_layout.setContentsMargins(0, 0, 0, 0)
         self._asset_layout.setSpacing(0)
-
-        self._layout.addWidget(self._asset_grid_widget, 0, 0)
-
-        # Stretch the 2nd column and row, so the asset grid widget always stays it's minimum size.
-        self._layout.setColumnStretch(1, 1)
-        self._layout.setRowStretch(1, 1)
+        spacer_layout.addWidget(self._asset_grid_widget, 0, 0)
 
         self._scrollbar = Qwidgets.QScrollBar(Qcore.Qt.Vertical)
-        # Stretch the scrollbar across 2 rows.
-        self._layout.addWidget(self._scrollbar, 0, 2, 2, 1)
+        self._layout.addWidget(self._scrollbar)
 
         # Our minimum size is 1 asset + horizontal scrollbar
         self.setMinimumWidth(self._item_width + self._scrollbar.minimumWidth())
@@ -72,14 +85,14 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         super().resizeEvent(event)
 
-        grid_width = event.size().width() - self._scrollbar.width() - self.STRANGE_PADDING_X
-        grid_height = event.size().height() - self.STRANGE_PADDING_Y
+        grid_width = event.size().width() - self._scrollbar.width()
+        grid_height = event.size().height()
 
         # Don't overflow horizontally (floor).
         items_in_width = math.floor(grid_width / self._item_width)
-        # TODO: Do overflow vertically down (ceil).
-        #       Curently this compresses instead of overflowing, so we `floor` instead at the moment.
-        items_in_height = math.floor(grid_height / self._item_height)
+        # Do overflow vertically down (ceil).
+        # This is an extra hint (next to the scrollbar...) to the user that they can scroll this vertically.
+        items_in_height = math.ceil(grid_height / self._item_height)
 
         # We do not remove excess horizontal or vertical widgets.
         # As the fact that we generated them means that we needed them once,
