@@ -59,7 +59,6 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
 
         # Create the widget that will contain the asset grid.
         self._asset_grid_widget = Qwidgets.QWidget()
-        self._asset_grid_widget.setStyleSheet("background: red;")
         self._asset_layout = Qwidgets.QGridLayout()
         self._asset_grid_widget.setLayout(self._asset_layout)
 
@@ -81,6 +80,22 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
 
     def show_assets(self, assets: dict):
         self._assets = assets
+        self._update_display()
+
+    def _update_display(self):
+        asset_index = 0
+        assets = list(self._assets.values())
+
+        no_more_assts = False
+
+        for row in self._asset_grid:
+            for widget in row:
+                if asset_index < len(assets):
+                    widget.show_asset(assets[asset_index])
+                    asset_index += 1
+                else:
+                    # No more assets to fill with.
+                    widget.remove_asset()
 
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         super().resizeEvent(event)
@@ -120,7 +135,7 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
                 self._asset_layout.removeWidget(widget)
                 widget.deleteLater()
             del self._asset_grid[extra_y]
-        
+
         # Remove unneeded horizontal widgets.
         for row in self._asset_grid:
             # From right to left, to make sure we don't walk over things we just deleted.
@@ -132,6 +147,9 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
                 del row[extra_x]
 
         self._last_items_in_width = items_in_width
+
+        # Update which assets go where.
+        self._update_display()
 
 
 class FlowGridLayout(Qwidgets.QLayout):
