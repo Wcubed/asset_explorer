@@ -119,17 +119,17 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
             for widget in self._asset_grid[extra_y]:
                 self._asset_layout.removeWidget(widget)
                 widget.deleteLater()
-            self._asset_grid.pop(extra_y)
-
+            del self._asset_grid[extra_y]
+        
         # Remove unneeded horizontal widgets.
-        # TODO: as it currently stands, causes error because the underlying c/c++ type has been removed.
-        #    (on `removeWidget)
-        # for row in self._asset_grid:
-        #     # From right to left, to make sure we don't walk over things we just deleted.
-        #     for extra_x in reversed(range(items_in_width, len(row))):
-        #         widget = row[extra_x]
-        #         self._asset_layout.removeWidget(widget)
-        #         widget.deleteLater()
+        for row in self._asset_grid:
+            # From right to left, to make sure we don't walk over things we just deleted.
+            for extra_x in reversed(range(items_in_width, len(row))):
+                widget = row[extra_x]
+                self._asset_layout.removeWidget(widget)
+                widget.deleteLater()
+
+                del row[extra_x]
 
         self._last_items_in_width = items_in_width
 
