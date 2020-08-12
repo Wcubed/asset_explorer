@@ -64,7 +64,8 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         self._layout.addWidget(scroll_area)
 
         # Create the container that keeps our asset grid widget from growing bigger than it's contents.
-        # TODO: there must be a better way to do this.
+        # TODO: there must be a better way to do this instead of nesting many widgets.
+        #       It works though.
         spacer_widget = Qwidgets.QWidget()
         spacer_widget.setStyleSheet("background: white;")
         spacer_layout = Qwidgets.QGridLayout()
@@ -89,6 +90,7 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         spacer_layout.addWidget(self._asset_grid_widget, 0, 0)
 
         self._scrollbar = Qwidgets.QScrollBar(Qcore.Qt.Vertical)
+        self._scrollbar.setMinimum(0)
         self._layout.addWidget(self._scrollbar)
 
         # Our minimum size is 1 asset + horizontal scrollbar
@@ -96,16 +98,22 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         self.setMinimumWidth(self._item_width + self._scrollbar.sizeHint().width())
         self.setMinimumHeight(self._item_height)
 
-        # TODO: Fill with as much asset widgets as needed to fill the size, but no more.
-        #   and adjust scrollbar to match how many didn't fit.
-        # TODO: when the user scrolls, we don't actually scroll the asset widgets.
-        #       we simply set new assets to the existing widgets.
+        # ---- Connections ----
+        self._scrollbar.valueChanged.connect(self.on_scrollbar_value_changed)
 
     def show_assets(self, assets: dict):
         self._assets = assets
+
+        # Scroll up when displaying new assets.
+        self._scrollbar.setValue(0)
+
+        self._calculate_grid_layout()
         self._update_display()
 
     def _update_display(self):
+        self._scrollbar.setMaximum(self._max_scroll_row)
+        self._scrollbar.setValue(self._scroll_row)
+
         # Start displaying assets at the place we are currently scrolled to.
         asset_index = int(self._scroll_row) * self._items_in_width
         assets = list(self._assets.values())
@@ -122,29 +130,21 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         super().resizeEvent(event)
 
-        grid_width = event.size().width() - self._scrollbar.width()
-        grid_height = event.size().height()
-
-        # Don't overflow horizontally (floor).
-        new_items_in_width = math.floor(grid_width / self._item_width)
-        # We don't display less than 1 item in the width.
-        new_items_in_width = max(new_items_in_width, 1)
-        # Do overflow vertically down (ceil).
-        # This is an extra hint (next to the scrollbar...) to the user that they can scroll this vertically.
-        new_items_in_height = math.ceil(grid_height / self._item_height)
+        # Recalculate all the values with the new size.
+        self._calculate_grid_layout()
 
         # We do not remove excess horizontal or vertical widgets.
         # As the fact that we generated them means that we needed them once,
         # and that means we might have to use them again. (That, and it doesn't cost that much to keep them).
 
         # Add any extra widgets that now fit.
-        for y in range(0, new_items_in_height):
+        for y in range(0, self._items_in_height):
             if y >= len(self._asset_grid):
                 self._asset_grid.append([])
                 # No stretching.
                 self._asset_layout.setRowStretch(y, 0)
 
-            for x in range(0, new_items_in_width):
+            for x in range(0, self._items_in_width):
                 if x >= len(self._asset_grid[y]):
                     new_widget = AssetWidget()
                     self._asset_grid[y].append(new_widget)
@@ -154,7 +154,7 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
 
         # Remove unneeded vertical widgets.
         # From bottom to top, to make sure we don't walk over things we just deleted.
-        for extra_y in reversed(range(new_items_in_height, len(self._asset_grid))):
+        for extra_y in reversed(range(self._items_in_height, len(self._asset_grid))):
             for widget in self._asset_grid[extra_y]:
                 self._asset_layout.removeWidget(widget)
                 widget.deleteLater()
@@ -163,24 +163,41 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         # Remove unneeded horizontal widgets.
         for row in self._asset_grid:
             # From right to left, to make sure we don't walk over things we just deleted.
-            for extra_x in reversed(range(new_items_in_width, len(row))):
+            for extra_x in reversed(range(self._items_in_width, len(row))):
                 widget = row[extra_x]
                 self._asset_layout.removeWidget(widget)
                 widget.deleteLater()
 
                 del row[extra_x]
 
-        # This is how many rows displaying all the items at the same time would take.
-        total_number_of_rows = math.ceil(len(self._assets.values()) / new_items_in_width)
-        # Make sure we don't scroll past the last items.
-        # The extra +1 is because we allow the last row to be clipped, so we want to scroll 1 more.
-        self._max_scroll_row = total_number_of_rows - new_items_in_height + 1
-
-        self._items_in_width = new_items_in_width
-        self._items_in_height = new_items_in_height
-
         # Update which assets go where.
         self._update_display()
+
+    def _calculate_grid_layout(self):
+        """
+        Calculates all the values that are needed for the proper layout of the grid.
+        """
+        grid_width = self.width() - self._scrollbar.width()
+        grid_height = self.height()
+
+        # TODO: recalculate our scroll_row so that the item that was in the top left
+        #       is still in the top row if possible.
+        #       this to make sure we don't scroll away when resizing.
+
+        # Don't overflow horizontally (floor).
+        self._items_in_width = math.floor(grid_width / self._item_width)
+        # We don't display less than 1 item in the width.
+        self._items_in_width = max(self._items_in_width, 1)
+
+        # Do overflow vertically down (ceil).
+        # This is an extra hint (next to the scrollbar...) to the user that they can scroll this vertically.
+        self._items_in_height = math.ceil(grid_height / self._item_height)
+
+        # This is how many rows displaying all the items at the same time would take.
+        total_number_of_rows = math.ceil(len(self._assets.values()) / self._items_in_width)
+        # Make sure we don't scroll past the last items.
+        # The extra +1 is because we allow the last row to be clipped, so we want to scroll 1 more.
+        self._max_scroll_row = max(total_number_of_rows - self._items_in_height + 1, 0)
 
     def eventFilter(self, source: Qcore.QObject, event: Qcore.QEvent) -> bool:
         # Catch the mouse wheel event.
@@ -198,6 +215,11 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         # Propagate all other events.
         return False
 
+    @Qcore.pyqtSlot(int)
+    def on_scrollbar_value_changed(self, value: int):
+        self._scroll_row = max(0, min(value, self._max_scroll_row))
+        self._update_display()
+
     def scroll(self, dx: int, dy: int) -> None:
         """
         Widget only scrolls in the y direction.
@@ -211,5 +233,6 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         elif self._items_in_height > self.SCROLL_2_PER_TICK_LIMIT:
             dy = 2 * dy
 
-        self._scroll_row = min(max(self._scroll_row + dy, 0), self._max_scroll_row)
-        self._update_display()
+        new_value = max(0, min(self._scroll_row + dy, self._max_scroll_row))
+        # Set the scrollbar position, and let the `valueChanged` signal take care of the rest.
+        self._scrollbar.setValue(new_value)
