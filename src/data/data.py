@@ -38,8 +38,13 @@ class Data(Qcore.QObject):
 
         self._asset_packs[new_pack.get_hash()] = new_pack
 
-        # TODO: do this asynchronously, and with a progress bar?
-        new_pack.scan_pack_directory()
+        # Does this already have a config?
+        if not new_pack.load_config_from_disk():
+            # TODO: do this asynchronously, and with a progress bar?
+            #       and do we want to re-scan on startup?
+            new_pack.scan_pack_directory()
+            # TODO: At what other points do we want to save the configuration?
+            new_pack.save_config_to_disk()
 
         logging.info(
             "Added asset pack \"{}\" from: \"{}\"".format(new_pack.get_name(), new_pack.get_path()))

@@ -6,17 +6,18 @@ This is an attempt to make it easy to search for a particular kind of item or im
 # Feature list
 ## Required
 
-- [ ] Add a folder entry bar above the file explorer.
+- [ ] Add asset packs via dialog, instead of the file explorer sidebar.
 - [ ] Tag images.
 - [ ] Show what tags an image has.
 - [ ] Remember the tags. By saving them in a `.asset_dir.csv` in the directory itself?
-- [ ] Show all images with a tag
-- [ ] Grid of images instead of a list. That way you can see more of them (the whole point of the exercise)
+- [ ] Filter images by tag.
 - [ ] Drop the full image from memory again if we don't need it. Otherwise we will fill quite a bit of ram.
 - [ ] Add a menu item to clear the cache.
 
 - [x] Add an asset pack (folder) to the library.
 - [x] Remove an asset pack (folder) from the library.
+- [x] Save an asset packs info into a json file in it's directory.
+- [x] Grid of images instead of a list. That way you can see more of them (the whole point of the exercise).
 - [x] Save the asset packs loaded into one of the common user directories. (in QStandardPaths::AppConfigLocation?)
 - [x] Show all images in an asset pack.
 - [x] Only load images when they are actually visible in the list.
@@ -24,6 +25,13 @@ This is an attempt to make it easy to search for a particular kind of item or im
     - [x] Cache the thumbnails on disk, by saving them with the hash of the asset path.
 
 # Whishlist
+- General robustnes (file not found, config key not found, and such.)
+- Make it clear that removing a pack, will not actually remove the "asset_pack.json" and therefore it's settings will
+  be remembered.
+- Sort asset packs by name.
+- Allow re-naming asset packs. This does not re-name the directory, merely save the new name in the asset_pack.json.
+- Re-Scan known asset packs on startup? And add a re-scan button.
+    - Do something smart when old assets cannot be found.
 - Allow for clearing the thumbnail cache.
 - Autosave interval? So we don't save for every little thing.
 - Automatically discover alternate versions of an image (transparent / psd file etc.)

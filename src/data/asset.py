@@ -37,6 +37,9 @@ class Asset:
     def get_absolute_path(self) -> str:
         return self._file_info.absoluteFilePath()
 
+    def get_relative_path(self, relative_to) -> str:
+        return relative_to.relativeFilePath(self._file_info.absoluteFilePath())
+
     def load_image(self) -> QPixmap:
         # We don't cache the full sized image, so that we don't use multiple gigabytes of memory after a while.
         # TODO: do something if it goes wrong.
