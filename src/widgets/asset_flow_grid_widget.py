@@ -30,12 +30,12 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         self._items_in_width = 0
         self._items_in_height = 0
 
-        # Which row is the one we are currently scrolled to.
-        # e.g. the top row in the grid.
-        # (We don't actually scroll the grid, we scroll the data,
-        # but the concept is the same)
-        self._scroll_row = 0
-        # What is the maximum top row we can scroll to,
+        # Which asset index is the one we are currently scrolled to?
+        # This asset will always be displayed in the top row of the grid.
+        self._asset_index_in_top_row = 0
+        # Which row is currently the top one?
+        self._top_scroll_row = 0
+        # What is the maximum top row we can scroll to
         # before we get a full row of whitespace at the bottom?
         # The last, potentially cut off, row doesn't count as whitespace.
         self._max_scroll_row = 0
@@ -112,10 +112,11 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
 
     def _update_display(self):
         self._scrollbar.setMaximum(self._max_scroll_row)
-        self._scrollbar.setValue(self._scroll_row)
+        # Keep the asset we were scrolled to in the top row.
+        self._scrollbar.setValue(math.floor(self._asset_index_in_top_row / self._items_in_width))
 
         # Start displaying assets at the place we are currently scrolled to.
-        asset_index = int(self._scroll_row) * self._items_in_width
+        asset_index = self._top_scroll_row * self._items_in_width
         assets = list(self._assets.values())
 
         for row in self._asset_grid:
@@ -180,10 +181,6 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         grid_width = self.width() - self._scrollbar.width()
         grid_height = self.height()
 
-        # TODO: recalculate our scroll_row so that the item that was in the top left
-        #       is still in the top row if possible.
-        #       this to make sure we don't scroll away when resizing.
-
         # Don't overflow horizontally (floor).
         self._items_in_width = math.floor(grid_width / self._item_width)
         # We don't display less than 1 item in the width.
@@ -216,8 +213,14 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         return False
 
     @Qcore.pyqtSlot(int)
-    def on_scrollbar_value_changed(self, value: int):
-        self._scroll_row = max(0, min(value, self._max_scroll_row))
+    def on_scrollbar_value_changed(self, row_value: int):
+        # Only re-calculate the asset we are scrolled to, if the last one is no longer in the top row.
+        # This allows us to resize the screen and always keep a certain asset at the top.
+        if row_value != math.floor(self._asset_index_in_top_row / self._items_in_width):
+            # Which asset index is at the top left?
+            self._asset_index_in_top_row = max(0, min(row_value, self._max_scroll_row)) * self._items_in_width
+
+        self._top_scroll_row = row_value
         self._update_display()
 
     def scroll(self, dx: int, dy: int) -> None:
@@ -233,6 +236,7 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         elif self._items_in_height > self.SCROLL_2_PER_TICK_LIMIT:
             dy = 2 * dy
 
-        new_value = max(0, min(self._scroll_row + dy, self._max_scroll_row))
+        # The scrollbar works per row, not per asset.
+        new_value = max(0, min(self._top_scroll_row + dy, self._max_scroll_row))
         # Set the scrollbar position, and let the `valueChanged` signal take care of the rest.
         self._scrollbar.setValue(new_value)

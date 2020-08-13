@@ -65,6 +65,8 @@ class AssetListWidget(Qwidgets.QWidget):
         # TODO: this can probably be done more efficient.
         #       For example by checking if certain assets are already there.
         self.view.setRowCount(0)
+        # Always scroll to the top when displaying a new list of assets.
+        self.view.scrollToTop()
 
         self.assets = assets
 
