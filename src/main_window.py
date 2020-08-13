@@ -20,7 +20,7 @@ class MainWindow(Qwidgets.QMainWindow):
     PIXMAP_MEMORY_CACHE_LIMIT = 200
 
     # Keys for the configuration dictionary.
-    CFG_KEY_VERSION = "config_version"
+    CFG_KEY_VERSION = "version"
     CFG_KEY_PACKS = "asset_packs"
     CFG_KEY_LAST_DIRECTORY = "last_directory"
 
@@ -141,7 +141,7 @@ class MainWindow(Qwidgets.QMainWindow):
         selected_packs = self.pack_list_widget.get_selected_packs()
         assets = {}
         for pack in selected_packs:
-            assets.update(pack.get_assets())
+            assets.update(pack.assets())
 
         self.asset_list_widget.show_assets(assets)
 
@@ -208,7 +208,7 @@ class MainWindow(Qwidgets.QMainWindow):
 
         pack_dirs = []
         for pack in self.data.get_packs().values():
-            pack_dirs.append(str(pack.get_path()))
+            pack_dirs.append(str(pack.absolute_path()))
 
         config = {
             self.CFG_KEY_VERSION: self.CONFIG_VERSION,

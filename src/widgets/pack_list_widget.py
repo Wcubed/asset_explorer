@@ -1,7 +1,7 @@
 import PyQt5.QtCore as Qcore
 import PyQt5.QtWidgets as Qwidgets
 
-from data import Data, AssetPack
+from data import Data, AssetDir
 
 
 class PackListWidget(Qwidgets.QWidget):
@@ -71,7 +71,7 @@ class PackListWidget(Qwidgets.QWidget):
         self.view.setItem(0, self.COUNT_COL, Qwidgets.QTableWidgetItem(str(pack.get_asset_count())))
 
         # TODO: right align this, and then cut the path off with "..." on the left?
-        path_item = Qwidgets.QTableWidgetItem(pack.get_path())
+        path_item = Qwidgets.QTableWidgetItem(pack.absolute_path())
         self.view.setItem(0, self.PATH_COL, path_item)
 
         self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(pack.get_hash()))
@@ -109,7 +109,7 @@ class PackListWidget(Qwidgets.QWidget):
 
         self.selection_changed.emit()
 
-    def get_selected_packs(self) -> [AssetPack]:
+    def get_selected_packs(self) -> [AssetDir]:
         selection = []
 
         # Get the hash keys of the selections.

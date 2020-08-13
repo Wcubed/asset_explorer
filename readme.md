@@ -9,10 +9,11 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Add asset packs via dialog, instead of the file explorer sidebar.
 - [ ] Tag images.
 - [ ] Show what tags an image has.
-- [ ] Remember the tags. By saving them in a `.asset_dir.csv` in the directory itself?
+- [ ] Remember the tags. By saving them in a `.asset_dir.json` in each directory and subdirectory?
 - [ ] Filter images by tag.
-- [ ] Add a menu item to clear the cache.
+- [ ] Show asset directories and their subdirectories. They are no longer "asset-packs"
 
+- [x] Add a menu item to clear the cache.
 - [x] Add an asset pack (folder) to the library.
 - [x] Remove an asset pack (folder) from the library.
 - [x] Save an asset packs info into a json file in it's directory.
@@ -42,7 +43,12 @@ This is an attempt to make it easy to search for a particular kind of item or im
 
 # Dependencies
 
-- PyQt5 (pip/pip3 install PyQt5)
+- Run with Python 3.6 or higher.
+- PyQt5 5.15.0 (pip/pip3 install PyQt5)
     - Docs: https://doc.qt.io/qtforpython/contents.html
     - Class reference: https://doc.bccnsoft.com/docs/PyQt5/class_reference.html
     - Or in case you have the QT5 assistant installed, you can use that as a reference.
+
+## Test dependencies
+- pytest 6.01, to run the tests.
+- pyfakefs 4.1.0, to mock the filesystem.
