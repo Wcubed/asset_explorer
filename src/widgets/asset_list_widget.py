@@ -14,7 +14,7 @@ class AssetListWidget(Qwidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        # hash -> Asset, dictionary of the assets to be displayed.
+        # hash -> Asset, ordered dictionary of the assets to be displayed.
         self.assets = {}
 
         # ---- layout ----
@@ -68,10 +68,12 @@ class AssetListWidget(Qwidgets.QWidget):
 
         self.assets = assets
 
-        for path, asset in assets.items():
-            self.view.insertRow(0)
-            self.view.setItem(0, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
-            self.view.setItem(0, self.HASH_COL, Qwidgets.QTableWidgetItem(asset.get_hash()))
+        for asset in assets.values():
+            # Insert at the bottom, to keep the ordering of the assets intact.
+            new_row_id = self.view.rowCount()
+            self.view.insertRow(new_row_id)
+            self.view.setItem(new_row_id, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
+            self.view.setItem(new_row_id, self.HASH_COL, Qwidgets.QTableWidgetItem(asset.get_hash()))
             # The thumbnails will be loaded when the item is visible.
 
         self.load_visible_asset_thumbnails()

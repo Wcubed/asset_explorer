@@ -1,3 +1,4 @@
+import collections
 import logging
 
 import PyQt5.QtCore as Qcore
@@ -14,8 +15,9 @@ class Data(Qcore.QObject):
     def __init__(self):
         super().__init__()
 
-        # path hash -> AssetPack, dictionary.
-        self._asset_packs = {}
+        # path hash -> Asset, ordered dictionary of the assets.
+        # The dictionary is ordered to make the assets display in the same order every time and in every view.
+        self._asset_packs = collections.OrderedDict()
 
     def add_asset_pack(self, pack_path: Qcore.QDir):
         # TODO(WWE): Check if the directory is not a subdirectory of one we already have.
