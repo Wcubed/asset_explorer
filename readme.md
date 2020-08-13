@@ -11,7 +11,6 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Show what tags an image has.
 - [ ] Remember the tags. By saving them in a `.asset_dir.csv` in the directory itself?
 - [ ] Filter images by tag.
-- [ ] Drop the full image from memory again if we don't need it. Otherwise we will fill quite a bit of ram.
 - [ ] Add a menu item to clear the cache.
 
 - [x] Add an asset pack (folder) to the library.
@@ -23,8 +22,11 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Only load images when they are actually visible in the list.
 - [x] Remember the images by the hash of their path that way we can:
     - [x] Cache the thumbnails on disk, by saving them with the hash of the asset path.
+- [x] Drop the full image from memory again if we don't need it. Otherwise we will fill quite a bit of ram.
 
 # Whishlist
+- Add built-in tags, like: "transparent-background"
+- Detect images with transparent backgrounds, and system-tag them accordingly (built-in tags)? How to do this reliably and quickly?
 - General robustnes (file not found, config key not found, and such.)
 - Make it clear that removing a pack, will not actually remove the "asset_pack.json" and therefore it's settings will
   be remembered.

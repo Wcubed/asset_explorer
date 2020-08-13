@@ -37,7 +37,7 @@ class AssetWidget(Qwidgets.QWidget):
         self._display.setPixmap(self._asset.load_thumbnail_cached(self.IMAGE_SIZE))
         # self._name.setText(self._asset.get_name())
 
-    def remove_asset(self):
+    def clear_display(self):
         """
         Clears the asset from this widget.
         """

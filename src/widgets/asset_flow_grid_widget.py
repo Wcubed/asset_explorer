@@ -126,7 +126,7 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
                     asset_index += 1
                 else:
                     # No more assets to fill with.
-                    widget.remove_asset()
+                    widget.clear_display()
 
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         super().resizeEvent(event)

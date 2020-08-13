@@ -83,7 +83,7 @@ class MainWindow(Qwidgets.QMainWindow):
         self.main_splitter.setStretchFactor(3, 1)
 
         # Details display
-        self.asset_details_widget = widgets.AssetDetailsWidget()
+        self.asset_details_widget = widgets.AssetsDetailsWidget()
         self.main_splitter.addWidget(self.asset_details_widget)
         self.main_splitter.setStretchFactor(4, 0)
 
@@ -132,11 +132,8 @@ class MainWindow(Qwidgets.QMainWindow):
 
     @Qcore.pyqtSlot()
     def on_asset_selection_changed(self):
-        asset = self.asset_list_widget.get_selected_asset()
-        if asset:
-            self.asset_details_widget.show_asset(asset)
-        else:
-            self.asset_details_widget.remove_asset()
+        assets = self.asset_list_widget.get_selected_assets()
+        self.asset_details_widget.show_assets(assets)
 
     def on_packs_removed(self):
         self.save_config()

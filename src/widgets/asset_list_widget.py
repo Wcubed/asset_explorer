@@ -1,5 +1,3 @@
-import typing
-
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
@@ -58,9 +56,8 @@ class AssetListWidget(Qwidgets.QWidget):
         # Select full rows.
         self.view.setSelectionBehavior(self.view.SelectRows)
 
-        # For now, only allow 1 selection.
-        # TODO: allow more selections.
-        self.view.setSelectionMode(self.view.SingleSelection)
+        # Allow multiple selection via shift and ctrl.
+        self.view.setSelectionMode(self.view.ExtendedSelection)
 
         # Style the table.
         self.view.setShowGrid(False)
@@ -92,13 +89,14 @@ class AssetListWidget(Qwidgets.QWidget):
 
         self.load_visible_asset_thumbnails()
 
-    def get_selected_asset(self) -> typing.Optional[Asset]:
-        # TODO: support selecting multiple items.
+    def get_selected_assets(self) -> [Asset]:
+        assets = []
         for index in self.view.selectedIndexes():
-            asset_hash = self.view.item(index.row(), self.HASH_COL).text()
-            return self.assets[asset_hash]
+            if index.column() == self.IMAGE_COL:
+                asset_hash = self.view.item(index.row(), self.HASH_COL).text()
+                assets.append(self.assets[asset_hash])
 
-        return None
+        return assets
 
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         # Make sure any newly visible items have their image thumbnail loaded.

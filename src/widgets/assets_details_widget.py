@@ -3,11 +3,16 @@ import PyQt5.QtWidgets as Qwidgets
 from data import Asset
 
 
-class AssetDetailsWidget(Qwidgets.QWidget):
+class AssetsDetailsWidget(Qwidgets.QWidget):
+    """
+    Displays the details of one or several assets.
+    Displays the large image when a single asset is selected.
+    """
+
     def __init__(self):
         super().__init__()
 
-        self._asset = None
+        self._assets = None
 
         layout = Qwidgets.QVBoxLayout()
         self.setLayout(layout)
@@ -17,28 +22,31 @@ class AssetDetailsWidget(Qwidgets.QWidget):
         self._display = AspectRatioPixmapLabel()
         layout.addWidget(self._display)
 
-        self._name = Qwidgets.QLabel(text="test")
-        layout.addWidget(self._name)
+        self._title = Qwidgets.QLabel()
+        layout.addWidget(self._title)
 
         layout.addStretch(1)
 
-    def show_asset(self, asset: Asset):
-        """
-        By default the widget will not load the image.
-        Call this when the asset widget becomes visible.
-        """
-        self._asset = asset
+    def show_assets(self, assets: [Asset]):
+        self._assets = assets
 
-        self._display.setPixmap(self._asset.load_image())
-        self._name.setText(self._asset.get_name())
-
-    def remove_asset(self):
-        """
-        Clears the asset from this widget.
-        """
-        if self._asset:
+        if len(assets) == 0:
+            self.clear_display()
+        elif len(assets) == 1:
+            self._display.setPixmap(self._assets[0].load_image())
+            self._title.setText(self._assets[0].get_name())
+        else:
             self._display.clear()
-            self._asset = None
+            self._title.setText(self.tr("{} assets selected").format(len(assets)))
+
+    def clear_display(self):
+        """
+        Clears the asset(s) from this widget.
+        """
+        self._display.clear()
+        self._title.setText("")
+
+        self._assets = None
 
 
 class AspectRatioPixmapLabel(Qwidgets.QLabel):
