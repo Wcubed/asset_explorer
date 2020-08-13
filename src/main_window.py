@@ -16,6 +16,9 @@ class MainWindow(Qwidgets.QMainWindow):
     # Version number to keep track of breaking changes in config files.
     CONFIG_VERSION = 1
 
+    # How large can the pixmap cache grow? In Mb.
+    PIXMAP_MEMORY_CACHE_LIMIT = 200
+
     # Keys for the configuration dictionary.
     CFG_KEY_VERSION = "config_version"
     CFG_KEY_PACKS = "asset_packs"
@@ -32,6 +35,10 @@ class MainWindow(Qwidgets.QMainWindow):
         # The asset pack configuration will be saved in their respective directories.
         self.config_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.AppConfigLocation)
         self.config_file = self.config_dir + "/" + self.CONFIG_FILE_NAME
+
+        # Set a nice high in-memory cache limit for our asset thumbnails.
+        # Is in Kb.
+        Qgui.QPixmapCache.setCacheLimit(self.PIXMAP_MEMORY_CACHE_LIMIT * 1024)
 
         # ---- Layout ----
 

@@ -27,9 +27,6 @@ class AssetWidget(Qwidgets.QWidget):
         self._display.setFixedSize(Qcore.QSize(self.IMAGE_SIZE, self.IMAGE_SIZE))
         layout.addWidget(self._display)
 
-        # self._name = Qwidgets.QLabel(text="test")
-        # layout.addWidget(self._name)
-
     def show_asset(self, asset: Asset):
         """
         By default the widget will not load the image.
