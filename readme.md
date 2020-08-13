@@ -23,6 +23,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Remember the images by the hash of their path that way we can:
     - [x] Cache the thumbnails on disk, by saving them with the hash of the asset path.
 - [x] Drop the full image from memory again if we don't need it. Otherwise we will fill quite a bit of ram.
+- [x] Allow for clearing the thumbnail cache.
 
 # Whishlist
 - Add built-in tags, like: "transparent-background"
@@ -34,7 +35,6 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - Allow re-naming asset packs. This does not re-name the directory, merely save the new name in the asset_pack.json.
 - Re-Scan known asset packs on startup? And add a re-scan button.
     - Do something smart when old assets cannot be found.
-- Allow for clearing the thumbnail cache.
 - Autosave interval? So we don't save for every little thing.
 - Automatically discover alternate versions of an image (transparent / psd file etc.)
 - Detect when we add a folder which is inside a folder we already have added.

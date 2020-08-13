@@ -40,7 +40,25 @@ class MainWindow(Qwidgets.QMainWindow):
         # Is in Kb.
         Qgui.QPixmapCache.setCacheLimit(self.PIXMAP_MEMORY_CACHE_LIMIT * 1024)
 
+        # Make sure the on-file thumbnail cache exists.
+        cache_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.CacheLocation)
+        if not os.path.isdir(cache_dir):
+            os.makedirs(cache_dir)
+
+        # ---- Menu ----
+
+        clear_thumbnail_cache_action = Qwidgets.QAction(self.tr("Clear thumbnail cache"), parent=self)
+        clear_thumbnail_cache_action.setStatusTip(
+            self.tr("Clears the thumbnail cache in memory as well as on the disk."))
+        clear_thumbnail_cache_action.triggered.connect(self.clear_thumbnail_caches)
+
+        menu = self.menuBar().addMenu(self.tr("&File"))
+        menu.addAction(clear_thumbnail_cache_action)
+
         # ---- Layout ----
+
+        # Enable the status bar.
+        self.statusBar().showMessage("")
 
         central_widget = Qwidgets.QWidget()
         self.setCentralWidget(central_widget)
@@ -138,10 +156,21 @@ class MainWindow(Qwidgets.QMainWindow):
     def on_packs_removed(self):
         self.save_config()
 
+    @Qcore.pyqtSlot()
+    def clear_thumbnail_caches(self):
+        logging.info(self.tr("Clearing thumbnail caches."))
+
+        # Clear the memory cache.
+        Qgui.QPixmapCache.clear()
+
+        # Clear the file cache.
+        cache_dir = Qcore.QDir(Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.CacheLocation))
+        cache_dir.removeRecursively()
+
     def load_config(self):
         try:
             with open(self.config_file, 'r') as f:
-                logging.info("Loading config from: \"{}\"".format(self.config_file))
+                logging.info(self.tr("Loading config from: \"{}\"").format(self.config_file))
 
                 # TODO: What to do if loading fails?
                 #       currently it will throw an exception.
@@ -151,10 +180,10 @@ class MainWindow(Qwidgets.QMainWindow):
                 # Check if we know this config version.
                 if version != self.CONFIG_VERSION:
                     # TODO: what to do if the versions don't match?
-                    logging.info(
+                    logging.info(self.tr(
                         "Unknown config version found: \'{}\', "
-                        "expected: \'{}\'. Will attempt to load anyway.".format(version,
-                                                                                self.CONFIG_VERSION))
+                        "expected: \'{}\'. Will attempt to load anyway.").format(version,
+                                                                                 self.CONFIG_VERSION))
 
                 # Restore all asset packs.
                 asset_packs = config[self.CFG_KEY_PACKS]
@@ -167,11 +196,11 @@ class MainWindow(Qwidgets.QMainWindow):
             # We could not load the file.
             # todo: show an appropriate log message for the reason.
             #       don't show a message if the file simply does not yet exist.
-            logging.warning("Could not load config file: \"{}\". Reason: {}".format(self.config_file, e))
+            logging.warning(self.tr("Could not load config file: \"{}\". Reason: {}").format(self.config_file, e))
 
     def save_config(self):
         # TODO: save a config version number, for if we need to convert config formats.
-        logging.info("Saving config to: \"{}\"".format(self.config_file))
+        logging.info(self.tr("Saving config to: \"{}\"").format(self.config_file))
 
         # Make sure the directories exist.
         if not os.path.isdir(self.config_dir):
