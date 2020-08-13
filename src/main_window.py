@@ -75,11 +75,17 @@ class MainWindow(Qwidgets.QMainWindow):
         self.main_splitter.addWidget(self.asset_flow_grid)
         self.main_splitter.setStretchFactor(3, 1)
 
+        # Details display
+        self.asset_details_widget = widgets.AssetDetailsWidget()
+        self.main_splitter.addWidget(self.asset_details_widget)
+        self.main_splitter.setStretchFactor(4, 0)
+
         # ---- Connections ----
 
         new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
         self.pack_list_widget.selection_changed.connect(self.on_pack_selection_changed)
         self.data.packs_removed.connect(self.on_packs_removed)
+        self.asset_list_widget.selection_changed.connect(self.on_asset_selection_changed)
 
         # ----
 
@@ -116,6 +122,14 @@ class MainWindow(Qwidgets.QMainWindow):
 
         # Testing for the asset flow grid.
         self.asset_flow_grid.show_assets(assets)
+
+    @Qcore.pyqtSlot()
+    def on_asset_selection_changed(self):
+        asset = self.asset_list_widget.get_selected_asset()
+        if asset:
+            self.asset_details_widget.show_asset(asset)
+        else:
+            self.asset_details_widget.remove_asset()
 
     def on_packs_removed(self):
         self.save_config()

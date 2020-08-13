@@ -1,3 +1,4 @@
+from .asset_details_widget import *
 from .asset_flow_grid_widget import *
 from .asset_list_widget import *
 from .asset_widget import *

@@ -1,6 +1,10 @@
+import typing
+
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
+
+from data import Asset
 
 
 class AssetListWidget(Qwidgets.QWidget):
@@ -10,6 +14,8 @@ class AssetListWidget(Qwidgets.QWidget):
 
     # Width and height in px of the displayed images.
     IMAGE_SIZE = 100
+
+    selection_changed = Qcore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -49,16 +55,22 @@ class AssetListWidget(Qwidgets.QWidget):
         # Disable editing.
         self.view.setEditTriggers(self.view.NoEditTriggers)
 
-        # Allow multiselect with shift and ctrl. Select full rows.
-        self.view.setSelectionMode(self.view.ExtendedSelection)
+        # Select full rows.
         self.view.setSelectionBehavior(self.view.SelectRows)
+
+        # For now, only allow 1 selection.
+        # TODO: allow more selections.
+        self.view.setSelectionMode(self.view.SingleSelection)
 
         # Style the table.
         self.view.setShowGrid(False)
         self.view.setStyleSheet("QTableWidget::item { border: 0px; padding-top: 3px; }")
 
+        # ---- Connections ----
+
         # When visible items change, we want to load their thumbnails.
         self.view.verticalScrollBar().valueChanged.connect(self.on_scrollbar_value_changed)
+        self.view.itemSelectionChanged.connect(self.on_selection_changed)
 
     def show_assets(self, assets: dict):
         # Remove previous displayed assets.
@@ -80,12 +92,25 @@ class AssetListWidget(Qwidgets.QWidget):
 
         self.load_visible_asset_thumbnails()
 
+    def get_selected_asset(self) -> typing.Optional[Asset]:
+        # TODO: support selecting multiple items.
+        for index in self.view.selectedIndexes():
+            asset_hash = self.view.item(index.row(), self.HASH_COL).text()
+            return self.assets[asset_hash]
+
+        return None
+
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         # Make sure any newly visible items have their image thumbnail loaded.
         self.load_visible_asset_thumbnails()
 
+    @Qcore.pyqtSlot()
     def on_scrollbar_value_changed(self):
         self.load_visible_asset_thumbnails()
+
+    @Qcore.pyqtSlot()
+    def on_selection_changed(self):
+        self.selection_changed.emit()
 
     def load_visible_asset_thumbnails(self):
         """
