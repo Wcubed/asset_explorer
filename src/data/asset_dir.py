@@ -44,6 +44,15 @@ class AssetDir:
         """
         return self._assets
 
+    def assets_recursive(self):
+        """
+        :return: All the assets contained in this directory and all of the recursive subdirectories.
+        """
+        assets = self._assets
+        for subdir in self._subdirs.values():
+            assets.update(subdir.assets_recursive())
+        return assets
+
     def save(self):
         """
         Recursively saves the json file for this directory, and all subdirectories.

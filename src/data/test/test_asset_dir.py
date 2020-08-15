@@ -90,6 +90,16 @@ def test_unscanned_find_assets(files_dir):
         assert expected_asset in found_assets
 
 
+def test_assets_recursive(files_dir):
+    """
+    Test if the `all_assets_recursive()` function returns the correct amount of assets.
+    """
+    unscanned_dir = pathlib.Path("unscanned_asset_dir")
+    asset_dir = AssetDir.load(unscanned_dir)
+
+    assert len(asset_dir.assets_recursive()) == 7
+
+
 def test_unscanned_save_creates_file(files_dir):
     """
     Test if the AssetDir saves a config file when scanning and saving an unscanned directory.
