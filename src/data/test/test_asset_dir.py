@@ -4,13 +4,13 @@ import pathlib
 import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 
-import data
+from data import AssetDir
 
 
 @pytest.fixture
 def files_dir():
     """
-    Creates a fake filesystem with the `files` directory in it, and cd's to it.
+    Creates a fake filesystem with the `files` directory in it, and cd's into it.
     :return:
     """
     files_dir = pathlib.Path(__file__).parent.joinpath("files")
@@ -18,6 +18,8 @@ def files_dir():
     fs = FakeFilesystem()
     fs.add_real_directory(files_dir)
     os.chdir(files_dir)
+
+    return fs
 
 
 def test_returns_absolute_path(files_dir):
@@ -27,35 +29,53 @@ def test_returns_absolute_path(files_dir):
     unscanned_dir = pathlib.Path("unscanned_asset_dir")
     unscanned_absolute = unscanned_dir.absolute()
 
-    asset_dir = data.AssetDir.load(unscanned_dir)
+    asset_dir = AssetDir.load(unscanned_dir)
 
     assert asset_dir.absolute_path() == unscanned_absolute
 
 
-def test_unscanned_returns_subdirs(files_dir):
+def test_unscanned_finds_correct_subdirs(files_dir):
     """
     Test if a new AssetDir properly lists the subdirectories that have assets
     when loading a previously unscanned directory.
-    :return:
     """
     unscanned_dir = pathlib.Path("unscanned_asset_dir")
-    unscanned_absolute = unscanned_dir.absolute()
 
-    asset_dir = data.AssetDir.load(unscanned_dir)
+    asset_dir = AssetDir.load(unscanned_dir)
 
-    subdirs = asset_dir.subdirs()
+    subdirs = asset_dir.subdirs().keys()
 
-    swords_dir = unscanned_absolute.joinpath("swords")
-    swords_transparent = unscanned_absolute.joinpath("swords_transparent")
-    swords_sources = unscanned_absolute.joinpath("swords_sources")
-    empty_dir = unscanned_absolute.joinpath("empty_dir")
-
+    # Directories with assets should be listed.
+    swords_dir = pathlib.Path("swords")
+    swords_transparent = pathlib.Path("swords_transparent")
     assert swords_dir in subdirs
     assert swords_transparent in subdirs
 
+    # Directories that have assets somewhere in their directory tree should be listed.
+    deep_nested_assets = pathlib.Path("deep_nested_assets")
+    assert deep_nested_assets in subdirs
+
     # Directories with no assets should not be listed.
+    swords_sources = pathlib.Path("swords_sources")
+    empty_dir = pathlib.Path("empty_dir")
+    non_assets = pathlib.Path("non_assets")
     assert swords_sources not in subdirs
     assert empty_dir not in subdirs
+    assert non_assets not in subdirs
 
-# TODO: test if it loaded the assets.
-# TODO: test recursive load.
+    # Directories that have subdirectories, but there are no assets anywhere in them,
+    # should not be listed.
+    dir_with_empty_subdirs = pathlib.Path("dir_with_emtpy_subdirs")
+    assert dir_with_empty_subdirs not in subdirs
+
+
+def test_unscanned_find_right_asset_amount(files_dir):
+    """
+    Test if the AssetDir properly lists the assets in a directory.
+    """
+    swords_dir = pathlib.Path("unscanned_asset_dir/swords")
+    asset_dir = AssetDir.load(swords_dir)
+
+    assert len(asset_dir.assets()) == 3
+
+# TODO test recursive loading.
