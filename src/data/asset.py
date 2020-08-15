@@ -97,10 +97,10 @@ class Asset:
             return thumbnail
         else:
             # Cache files are named: <hash>_<size>.png
-            cache_file_path = self._thumbnail_cache_dir.joinpath(thumbnail_key).joinpath(".png")
+            cache_file_path = self._thumbnail_cache_dir.joinpath(thumbnail_key).with_suffix(".png")
             if cache_file_path.is_file():
                 # We already have a thumbnail of this size cached on disk.
-                thumbnail = QPixmap(cache_file_path)
+                thumbnail = QPixmap(str(cache_file_path))
             else:
                 image = self.load_image()
                 # Scale with preserved aspect ratio, so the image fits in a square with sides of "size".
