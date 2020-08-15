@@ -1,5 +1,3 @@
-import logging
-
 import PyQt5.QtCore as Qcore
 import PyQt5.QtWidgets as Qwidgets
 
@@ -108,10 +106,17 @@ class TagDisplay(Qwidgets.QWidget):
 
         self._assets = []
         self._known_tags = set()
+        # The tags currently in the tag list.
+        self._displayed_tags = set()
+
+        # ---- Layout ----
 
         layout = Qwidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
+
+        self._tag_list = Qwidgets.QListWidget()
+        layout.addWidget(self._tag_list)
 
         add_tag_row = Qwidgets.QHBoxLayout()
         layout.addLayout(add_tag_row)
@@ -146,13 +151,27 @@ class TagDisplay(Qwidgets.QWidget):
         self._add_tag_box.setCurrentText("")
 
     def show_tags_of_assets(self, assets: [Asset]):
+        self._tag_list.clear()
+
         self._assets = assets
+
+        # TODO: see which tags are shared by all,
+        #       and display those differently.
+        tags = set()
+        for asset in self._assets:
+            tags.update(asset.tags())
+
+        # Put the tags in the tag display.
+        for tag in tags:
+            self._tag_list.addItem(Qwidgets.QListWidgetItem(tag))
+        self._displayed_tags = tags
 
     @Qcore.pyqtSlot()
     def on_tag_selected(self):
         # TODO: add autocomplete.
         # Get the tag, and clear the box.
-        tag = self._add_tag_box.currentText()
+        # Tags are always lowercase.
+        tag = self._add_tag_box.currentText().lower()
         self._add_tag_box.setCurrentText("")
 
         # Is it a new tag?
@@ -164,4 +183,6 @@ class TagDisplay(Qwidgets.QWidget):
         for asset in self._assets:
             asset.add_tag(tag)
 
-        logging.debug("New tag: {}".format(tag))
+        # Update the display with the new tag.
+        if tag not in self._displayed_tags:
+            self._tag_list.addItem(Qwidgets.QListWidgetItem(tag))

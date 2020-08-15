@@ -151,7 +151,8 @@ class AssetDir:
                     tags = set()
                     if AssetDir.CFG_ASSET_TAGS in asset_dict:
                         for tag in asset_dict[AssetDir.CFG_ASSET_TAGS]:
-                            tags.add(tag)
+                            # Tags are always lowercase.
+                            tags.add(tag.lower())
 
                     new_asset = Asset(absolute_path, asset_uuid=asset_uuid, tags=tags)
 
