@@ -2,20 +2,18 @@ import os
 import pathlib
 
 import pytest
-from pyfakefs.fake_filesystem import FakeFilesystem
 
 from data import AssetDir
 
 
 @pytest.fixture
-def files_dir():
+def files_dir(fs):
     """
     Creates a fake filesystem with the `files` directory in it, and cd's into it.
     :return:
     """
     files_dir = pathlib.Path(__file__).parent.joinpath("files")
 
-    fs = FakeFilesystem()
     fs.add_real_directory(files_dir)
     os.chdir(files_dir)
 
@@ -69,13 +67,37 @@ def test_unscanned_finds_correct_subdirs(files_dir):
     assert dir_with_empty_subdirs not in subdirs
 
 
-def test_unscanned_find_right_asset_amount(files_dir):
+def test_unscanned_find_assets(files_dir):
     """
     Test if the AssetDir properly lists the assets in a directory.
     """
     swords_dir = pathlib.Path("unscanned_asset_dir/swords")
     asset_dir = AssetDir.load(swords_dir)
 
-    assert len(asset_dir.assets()) == 3
+    expected_assets = ["square_crossed.png", "tall.png", "wide.png"]
+
+    assert len(asset_dir.assets()) == len(expected_assets)
+
+    found_assets = []
+    for asset in asset_dir.assets().values():
+        relative_path = asset.relative_path(asset_dir.absolute_path())
+        found_assets.append(str(relative_path))
+
+    for expected_asset in expected_assets:
+        assert expected_asset in found_assets
+
+
+def test_unscanned_save_creates_file(files_dir):
+    """
+    Test if the AssetDir saves a config file when scanning and saving an unscanned directory.
+    """
+    swords_dir = pathlib.Path("unscanned_asset_dir/swords")
+    asset_dir = AssetDir.load(swords_dir)
+
+    asset_dir.save()
+
+    # Check if the file got saved.
+    config_file = swords_dir.joinpath(AssetDir.CONFIG_FILE_NAME)
+    assert config_file.is_file()
 
 # TODO test recursive loading.
