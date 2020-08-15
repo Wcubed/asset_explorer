@@ -14,6 +14,7 @@ class AssetDir:
     CFG_VERSION = "version"
     CFG_ASSETS = "assets"
     CFG_ASSET_UUID = "uuid"
+    CFG_ASSET_TAGS = "tags"
 
     def __init__(self, path, subdirs: dict, assets: dict):
         """
@@ -87,6 +88,11 @@ class AssetDir:
                 asset_dict = {
                     self.CFG_ASSET_UUID: str(asset.uuid()),
                 }
+
+                # Save tags if there are any.
+                if len(asset.tags()) > 0:
+                    asset_dict[self.CFG_ASSET_TAGS] = asset.tags()
+
                 assets_dict[str(asset.relative_path(self._path))] = asset_dict
 
             config_dict = {
@@ -125,7 +131,13 @@ class AssetDir:
                     absolute_path = _path.joinpath(asset_path).absolute()
 
                     asset_uuid = uuid.UUID(asset_dict[AssetDir.CFG_ASSET_UUID])
-                    new_asset = Asset(absolute_path, asset_uuid=asset_uuid)
+                    # Add tags if there are any.
+                    tags = set()
+                    if AssetDir.CFG_ASSET_TAGS in asset_dict:
+                        for tag in asset_dict[AssetDir.CFG_ASSET_TAGS]:
+                            tags.add(tag)
+
+                    new_asset = Asset(absolute_path, asset_uuid=asset_uuid, tags=tags)
 
                     assets[asset_uuid] = new_asset
 

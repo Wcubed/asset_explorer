@@ -10,10 +10,16 @@ class Asset:
     # All lowercase.
     ASSET_EXTENSIONS = ['.png']
 
-    def __init__(self, path, asset_uuid=None):
+    def __init__(self, path, asset_uuid=None, tags=None):
+        if tags is None:
+            tags = set()
+
         self._path = pathlib.Path(path).absolute()
 
         self._uuid = asset_uuid
+        self._tags = tags
+
+        # Marks whether the Asset has been edited in-memory since last time it was loaded.
         self._dirty = False
 
         if not self._uuid:
@@ -27,6 +33,15 @@ class Asset:
 
     def name(self):
         return self._path.name
+
+    def tags(self):
+        return self._tags
+
+    def add_tag(self, tag):
+        self._tags.add(tag)
+
+    def remove_tag(self, tag):
+        self._tags.remove(tag)
 
     def is_dirty(self):
         """
