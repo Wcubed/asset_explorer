@@ -116,6 +116,9 @@ class TagDisplay(Qwidgets.QWidget):
         self.setLayout(layout)
 
         self._tag_list = Qwidgets.QListWidget()
+        # Allow multiple selections, with shift and ctrl.
+        self._tag_list.setSelectionMode(self._tag_list.ExtendedSelection)
+        self._tag_list.setSpacing(5)
         layout.addWidget(self._tag_list)
 
         add_tag_row = Qwidgets.QHBoxLayout()
@@ -130,14 +133,21 @@ class TagDisplay(Qwidgets.QWidget):
         add_tag_row.addWidget(self._add_tag_box)
         add_tag_row.setStretch(1, 1)
 
-        for tag in self._known_tags:
-            self._add_tag_box.addItem(tag)
+        self._remove_tag_button = Qwidgets.QPushButton(self.tr("Remove selected tags"))
+        self._remove_tag_button.setEnabled(False)
+        layout.addWidget(self._remove_tag_button)
 
         # ---- Connections ----
 
         # Act when a user either selects or enters a tag.
-        self._add_tag_box.activated.connect(self.on_tag_selected)
-        self._add_tag_box.lineEdit().returnPressed.connect(self.on_tag_selected)
+        self._add_tag_box.activated.connect(self.on_add_tag_input)
+        self._add_tag_box.lineEdit().returnPressed.connect(self.on_add_tag_input)
+
+        # Change the button state when the selection changes.
+        self._tag_list.itemSelectionChanged.connect(self.on_selection_changed)
+
+        # Remove tags when the button is pressed.
+        self._remove_tag_button.clicked.connect(self.on_remove_tag_button_pressed)
 
     def add_known_tags(self, known_tags):
         # Append currently unknown tags to the selection box.
@@ -167,7 +177,7 @@ class TagDisplay(Qwidgets.QWidget):
         self._displayed_tags = tags
 
     @Qcore.pyqtSlot()
-    def on_tag_selected(self):
+    def on_add_tag_input(self):
         # TODO: add autocomplete.
         # Get the tag, and clear the box.
         # Tags are always lowercase.
@@ -186,3 +196,22 @@ class TagDisplay(Qwidgets.QWidget):
         # Update the display with the new tag.
         if tag not in self._displayed_tags:
             self._tag_list.addItem(Qwidgets.QListWidgetItem(tag))
+
+    @Qcore.pyqtSlot()
+    def on_remove_tag_button_pressed(self):
+        selected_indexes = self._tag_list.selectedIndexes()
+
+        for index in selected_indexes:
+            tag = self._tag_list.itemFromIndex(index).text()
+            # Remove the tags from the assets.
+            for asset in self._assets:
+                asset.remove_tag(tag)
+
+            # Remove the tag from the list display.
+            self._tag_list.takeItem(index.row())
+
+    @Qcore.pyqtSlot()
+    def on_selection_changed(self):
+        # Remove button is only enabled when there are actually items selected.
+        enabled = len(self._tag_list.selectedIndexes()) > 0
+        self._remove_tag_button.setEnabled(enabled)
