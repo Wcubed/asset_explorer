@@ -1,3 +1,5 @@
+import uuid
+
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
@@ -8,7 +10,7 @@ from data import Asset
 class AssetListWidget(Qwidgets.QWidget):
     IMAGE_COL = 0
     NAME_COL = 1
-    HASH_COL = 2
+    UUID_COL = 2
 
     # Width and height in px of the displayed images.
     IMAGE_SIZE = 100
@@ -18,7 +20,7 @@ class AssetListWidget(Qwidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        # hash -> Asset, ordered dictionary of the assets to be displayed.
+        # uuid -> Asset, ordered dictionary of the assets to be displayed.
         self.assets = {}
 
         # ---- layout ----
@@ -40,9 +42,9 @@ class AssetListWidget(Qwidgets.QWidget):
         self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem("Name"))
         self.view.horizontalHeader().setSectionResizeMode(self.NAME_COL, Qwidgets.QHeaderView.Stretch)
 
-        # The asset hash column is only for internal use.
-        self.view.insertColumn(self.HASH_COL)
-        self.view.setColumnHidden(self.HASH_COL, True)
+        # The asset uuid column is only for internal use.
+        self.view.insertColumn(self.UUID_COL)
+        self.view.setColumnHidden(self.UUID_COL, True)
 
         # Make the rows IMAGE_SIZE pixels high.
         self.view.verticalHeader().hide()
@@ -83,8 +85,8 @@ class AssetListWidget(Qwidgets.QWidget):
             # Insert at the bottom, to keep the ordering of the assets intact.
             new_row_id = self.view.rowCount()
             self.view.insertRow(new_row_id)
-            self.view.setItem(new_row_id, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.get_name()))
-            self.view.setItem(new_row_id, self.HASH_COL, Qwidgets.QTableWidgetItem(asset.get_hash()))
+            self.view.setItem(new_row_id, self.NAME_COL, Qwidgets.QTableWidgetItem(asset.name()))
+            self.view.setItem(new_row_id, self.UUID_COL, Qwidgets.QTableWidgetItem(str(asset.uuid())))
             # The thumbnails will be loaded when the item is visible.
 
         self.load_visible_asset_thumbnails()
@@ -93,8 +95,8 @@ class AssetListWidget(Qwidgets.QWidget):
         assets = []
         for index in self.view.selectedIndexes():
             if index.column() == self.IMAGE_COL:
-                asset_hash = self.view.item(index.row(), self.HASH_COL).text()
-                assets.append(self.assets[asset_hash])
+                asset_uuid = uuid.UUID(self.view.item(index.row(), self.UUID_COL).text())
+                assets.append(self.assets[asset_uuid])
 
         return assets
 
@@ -133,8 +135,8 @@ class AssetListWidget(Qwidgets.QWidget):
 
         for row in range(top_visible_row, bottom_visible_plus_one):
             # Load the thumbnail.
-            hash_key = self.view.item(row, self.HASH_COL).text()
-            asset = self.assets[hash_key]
+            asset_uuid = self.view.item(row, self.UUID_COL).text()
+            asset = self.assets[uuid.UUID(asset_uuid)]
 
             # TODO: image loading and thumbnail generation should be done asynchronously.
             item = Qwidgets.QTableWidgetItem()

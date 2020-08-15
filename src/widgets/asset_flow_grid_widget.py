@@ -19,7 +19,7 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
     def __init__(self):
         super().__init__()
 
-        # hash -> Asset, ordered dictionary of the assets to be displayed.
+        # uuid -> Asset, ordered dictionary of the assets to be displayed.
         self._assets = {}
         # [y][x] grid of asset widgets.
         self._asset_grid = []

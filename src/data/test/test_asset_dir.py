@@ -5,6 +5,9 @@ import pytest
 
 from data import AssetDir
 
+UNSCANNED_DIR = "unscanned_asset_dir"
+SWORDS_DIR = "unscanned_asset_dir/swords"
+
 
 @pytest.fixture
 def files_dir(fs):
@@ -24,7 +27,7 @@ def test_returns_absolute_path(files_dir):
     """
     Test if the a new AssetDir returns an absolute path.
     """
-    unscanned_dir = pathlib.Path("unscanned_asset_dir")
+    unscanned_dir = pathlib.Path(UNSCANNED_DIR)
     unscanned_absolute = unscanned_dir.absolute()
 
     asset_dir = AssetDir.load(unscanned_dir)
@@ -37,7 +40,7 @@ def test_unscanned_finds_correct_subdirs(files_dir):
     Test if a new AssetDir properly lists the subdirectories that have assets
     when loading a previously unscanned directory.
     """
-    unscanned_dir = pathlib.Path("unscanned_asset_dir")
+    unscanned_dir = pathlib.Path(UNSCANNED_DIR)
 
     asset_dir = AssetDir.load(unscanned_dir)
 
@@ -71,12 +74,12 @@ def test_unscanned_find_assets(files_dir):
     """
     Test if the AssetDir properly lists the assets in a directory.
     """
-    swords_dir = pathlib.Path("unscanned_asset_dir/swords")
+    swords_dir = pathlib.Path(SWORDS_DIR)
     asset_dir = AssetDir.load(swords_dir)
 
     expected_assets = ["square_crossed.png", "tall.png", "wide.png"]
 
-    assert len(asset_dir.assets()) == len(expected_assets)
+    assert asset_dir.asset_count() == len(expected_assets)
 
     found_assets = []
     for asset in asset_dir.assets().values():
@@ -94,17 +97,17 @@ def test_assets_recursive(files_dir):
     """
     Test if the `all_assets_recursive()` function returns the correct amount of assets.
     """
-    unscanned_dir = pathlib.Path("unscanned_asset_dir")
+    unscanned_dir = pathlib.Path(UNSCANNED_DIR)
     asset_dir = AssetDir.load(unscanned_dir)
 
-    assert len(asset_dir.assets_recursive()) == 7
+    assert asset_dir.asset_count_recursive() == 7
 
 
 def test_unscanned_save_creates_file(files_dir):
     """
     Test if the AssetDir saves a config file when scanning and saving an unscanned directory.
     """
-    swords_dir = pathlib.Path("unscanned_asset_dir/swords")
+    swords_dir = pathlib.Path(SWORDS_DIR)
     asset_dir = AssetDir.load(swords_dir)
 
     asset_dir.save()
@@ -118,14 +121,14 @@ def test_save_and_load(files_dir):
     """
     Checks if saving and then loading an asset dir will have the assets marked as clean.
     """
-    swords_dir = pathlib.Path("unscanned_asset_dir/swords")
+    swords_dir = pathlib.Path(SWORDS_DIR)
     asset_dir = AssetDir.load(swords_dir)
 
     asset_dir.save()
 
     from_file = AssetDir.load(swords_dir)
 
-    assert len(from_file.assets()) == 3
+    assert from_file.asset_count() == 3
 
     # The assets should now not be dirty, as we loaded them from the config file.
     for asset in from_file.assets().values():

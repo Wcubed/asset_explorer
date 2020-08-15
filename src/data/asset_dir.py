@@ -1,5 +1,6 @@
 import json
 import pathlib
+import uuid
 
 from data import Asset
 
@@ -24,6 +25,9 @@ class AssetDir:
         self._subdirs = subdirs
         self._assets = assets
 
+    def name(self):
+        return self._path.name
+
     def absolute_path(self):
         """
         :return: The absolute path as a `pathlib.Path`.
@@ -44,6 +48,9 @@ class AssetDir:
         """
         return self._assets
 
+    def asset_count(self):
+        return len(self._assets)
+
     def assets_recursive(self):
         """
         :return: All the assets contained in this directory and all of the recursive subdirectories.
@@ -52,6 +59,13 @@ class AssetDir:
         for subdir in self._subdirs.values():
             assets.update(subdir.assets_recursive())
         return assets
+
+    def asset_count_recursive(self):
+        count = self.asset_count()
+        for subdir in self._subdirs.values():
+            count += subdir.asset_count_recursive()
+
+        return count
 
     def save(self):
         """
@@ -76,7 +90,7 @@ class AssetDir:
                 assets_dict[str(asset.relative_path(self._path))] = asset_dict
 
             config_dict = {
-                self.CFG_VERSION: self.CFG_VERSION,
+                self.CFG_VERSION: self.CONFIG_VERSION,
                 self.CFG_ASSETS: assets_dict,
             }
 
@@ -107,12 +121,15 @@ class AssetDir:
                 assets_dict = config[AssetDir.CFG_ASSETS]
 
                 # Load all the assets from the file.
-                for path, asset_dict in assets_dict.items():
-                    asset_uuid = asset_dict[AssetDir.CFG_ASSET_UUID]
-                    new_asset = Asset(path, asset_uuid=asset_uuid)
+                for asset_path, asset_dict in assets_dict.items():
+                    absolute_path = _path.joinpath(asset_path).absolute()
+
+                    asset_uuid = uuid.UUID(asset_dict[AssetDir.CFG_ASSET_UUID])
+                    new_asset = Asset(absolute_path, asset_uuid=asset_uuid)
 
                     assets[asset_uuid] = new_asset
-                    asset_paths.append(path)
+
+                    asset_paths.append(absolute_path)
         except IOError:
             # TODO: what if we can't access the file, but we know it's there?
             #   The file not existing is not an error. Because then it is a new directory.
@@ -123,6 +140,7 @@ class AssetDir:
 
         subdirs = {}
         for item in _path.iterdir():
+
             if item.is_dir():
                 # Recursively load the subdirectories.
                 new_subdir = AssetDir.load(item)
@@ -133,9 +151,10 @@ class AssetDir:
                     subdirs[rel_path] = new_subdir
             elif Asset.is_asset(item):
                 # Do we already know of this asset?
-                if str(item.relative_to(_path)) not in asset_paths:
+                absolute_path = item.absolute()
+                if absolute_path not in asset_paths:
                     # Found a new asset in this directory, that was not in the config file.
-                    new_asset = Asset(item)
+                    new_asset = Asset(absolute_path)
                     assets[new_asset.uuid()] = new_asset
 
         # TODO: What do we do with assets that were in the save file, but now are not?

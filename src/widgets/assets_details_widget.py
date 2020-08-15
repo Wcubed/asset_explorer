@@ -34,7 +34,7 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
             self.clear_display()
         elif len(assets) == 1:
             self._display.setPixmap(self._assets[0].load_image())
-            self._title.setText(self._assets[0].get_name())
+            self._title.setText(self._assets[0].name())
         else:
             self._display.clear()
             self._title.setText(self.tr("{} assets selected").format(len(assets)))

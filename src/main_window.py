@@ -1,13 +1,14 @@
 import json
 import logging
 import os
+import pathlib
 
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
 
-import data
 import widgets
+from data import AssetDir
 
 
 class MainWindow(Qwidgets.QMainWindow):
@@ -21,7 +22,7 @@ class MainWindow(Qwidgets.QMainWindow):
 
     # Keys for the configuration dictionary.
     CFG_KEY_VERSION = "version"
-    CFG_KEY_PACKS = "asset_packs"
+    CFG_KEY_ASSET_DIRS = "asset_dirs"
     CFG_KEY_LAST_DIRECTORY = "last_directory"
 
     def __init__(self):
@@ -30,7 +31,8 @@ class MainWindow(Qwidgets.QMainWindow):
         # The application name influences where the config file is stored.
         Qcore.QCoreApplication.setApplicationName("asset_explorer")
 
-        self.data = data.Data()
+        # pathlib.Path -> AssetDir
+        self.asset_dirs = {}
         # Application config goes into appdata (or platform equivalent)
         # The asset pack configuration will be saved in their respective directories.
         self.config_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.AppConfigLocation)
@@ -83,11 +85,11 @@ class MainWindow(Qwidgets.QMainWindow):
         self.directory_explorer = widgets.FilesystemExplorer()
         explorer_layout.addWidget(self.directory_explorer)
 
-        new_asset_dir_button = Qwidgets.QPushButton(text=self.tr("Add selected folders as packs"))
+        new_asset_dir_button = Qwidgets.QPushButton(text=self.tr("Add selected folders"))
         explorer_layout.addWidget(new_asset_dir_button)
 
-        self.pack_list_widget = widgets.PackListWidget(self.data)
-        self.main_splitter.addWidget(self.pack_list_widget)
+        self.asset_dir_list_widget = widgets.AssetDirListWidget(self.asset_dirs)
+        self.main_splitter.addWidget(self.asset_dir_list_widget)
         # Asset table shouldn't auto stretch.
         self.main_splitter.setStretchFactor(1, 0)
 
@@ -107,9 +109,8 @@ class MainWindow(Qwidgets.QMainWindow):
 
         # ---- Connections ----
 
-        new_asset_dir_button.clicked.connect(self.add_new_asset_packs)
-        self.pack_list_widget.selection_changed.connect(self.on_pack_selection_changed)
-        self.data.packs_removed.connect(self.on_packs_removed)
+        new_asset_dir_button.clicked.connect(self.add_selected_asset_dirs)
+        self.asset_dir_list_widget.selection_changed.connect(self.on_asset_dir_selection_changed)
         self.asset_list_widget.selection_changed.connect(self.on_asset_selection_changed)
 
         # ----
@@ -126,22 +127,39 @@ class MainWindow(Qwidgets.QMainWindow):
         # Close.
         event.accept()
 
-    def add_new_asset_packs(self):
+    def add_selected_asset_dirs(self):
         new_dirs = self.directory_explorer.get_selected_directories()
+        abs_dirs = []
+        for new_dir in new_dirs:
+            abs_dirs.append(pathlib.Path(new_dir.absolutePath()))
 
-        self.data.add_asset_packs(new_dirs)
+        self.add_asset_dirs(abs_dirs)
+
+    def add_asset_dirs(self, dir_paths):
+        new_abs_paths = []
+        for dir_path in dir_paths:
+            # TODO: what if there are duplicates?
+            #       or a directory is contained in one we already have, or vice-versa?
+            new_asset_dir = AssetDir.load(dir_path)
+            self.asset_dirs[new_asset_dir.absolute_path()] = new_asset_dir
+            new_abs_paths.append(new_asset_dir.absolute_path())
+
         self.directory_explorer.clear_selection()
 
-        # Save the newly selected asset packs.
+        # Save the newly added asset directories.
         self.save_config()
 
+        # Update the asset list.
+        for abs_path in new_abs_paths:
+            self.asset_dir_list_widget.on_new_asset_dir(abs_path)
+
     @Qcore.pyqtSlot()
-    def on_pack_selection_changed(self):
-        # Show the selected asset packs in the asset list.
-        selected_packs = self.pack_list_widget.get_selected_packs()
+    def on_asset_dir_selection_changed(self):
+        # Show the selected asset directories in the asset list.
+        selected_dirs = self.asset_dir_list_widget.get_selected_dirs()
         assets = {}
-        for pack in selected_packs:
-            assets.update(pack.assets())
+        for asset_dir in selected_dirs:
+            assets.update(asset_dir.assets_recursive())
 
         self.asset_list_widget.show_assets(assets)
 
@@ -185,13 +203,12 @@ class MainWindow(Qwidgets.QMainWindow):
                         "expected: \'{}\'. Will attempt to load anyway.").format(version,
                                                                                  self.CONFIG_VERSION))
 
-                # Restore all asset packs.
-                asset_packs = config[self.CFG_KEY_PACKS]
-                for pack in asset_packs:
-                    self.data.add_asset_pack(Qcore.QDir(pack))
-
                 # Restore the last directory the explorer was at.
                 self.directory_explorer.cd_to_directory(config[self.CFG_KEY_LAST_DIRECTORY])
+
+                # Restore all asset directories.
+                asset_dirs = config[self.CFG_KEY_ASSET_DIRS]
+                self.add_asset_dirs(asset_dirs)
         except IOError as e:
             # We could not load the file.
             # todo: show an appropriate log message for the reason.
@@ -206,13 +223,15 @@ class MainWindow(Qwidgets.QMainWindow):
         if not os.path.isdir(self.config_dir):
             os.makedirs(self.config_dir)
 
-        pack_dirs = []
-        for pack in self.data.get_packs().values():
-            pack_dirs.append(str(pack.absolute_path()))
+        # Save the individual asset directories.
+        asset_dir_paths = []
+        for asset_dir in self.asset_dirs.values():
+            asset_dir.save()
+            asset_dir_paths.append(str(asset_dir.absolute_path()))
 
         config = {
             self.CFG_KEY_VERSION: self.CONFIG_VERSION,
-            self.CFG_KEY_PACKS: pack_dirs,
+            self.CFG_KEY_ASSET_DIRS: asset_dir_paths,
             self.CFG_KEY_LAST_DIRECTORY: self.directory_explorer.get_current_directory().absolutePath()
         }
 
