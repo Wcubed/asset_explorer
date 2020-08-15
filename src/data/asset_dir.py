@@ -6,8 +6,11 @@ from data import Asset
 
 class AssetDir:
     CONFIG_FILE_NAME = ".asset_dir.json"
+    # For keeping track of breaking changes.
+    CONFIG_VERSION = 1
 
     # Config keys.
+    CFG_VERSION = "version"
     CFG_ASSETS = "assets"
     CFG_ASSET_UUID = "uuid"
 
@@ -55,19 +58,21 @@ class AssetDir:
                 save = True
                 break
 
-        assets_dict = {}
-        for asset in self._assets.values():
-            asset_dict = {
-                self.CFG_ASSET_UUID: str(asset.uuid()),
+        if save:
+            assets_dict = {}
+            for asset in self._assets.values():
+                asset_dict = {
+                    self.CFG_ASSET_UUID: str(asset.uuid()),
+                }
+                assets_dict[str(asset.relative_path(self._path))] = asset_dict
+
+            config_dict = {
+                self.CFG_VERSION: self.CFG_VERSION,
+                self.CFG_ASSETS: assets_dict,
             }
-            assets_dict[str(asset.relative_path(self._path))] = asset_dict
 
-        config_dict = {
-            self.CFG_ASSETS: assets_dict,
-        }
-
-        with open(self._path.joinpath(self.CONFIG_FILE_NAME), 'w') as f:
-            json.dump(config_dict, f)
+            with open(self._path.joinpath(self.CONFIG_FILE_NAME), 'w') as f:
+                json.dump(config_dict, f)
 
         # Always check the subdirectories.
         for subdir in self._subdirs.values():
@@ -80,6 +85,33 @@ class AssetDir:
         _path = pathlib.Path(path)
 
         assets = {}
+        # Keep track of which asset paths we already know of.
+        asset_paths = []
+        try:
+            with open(_path.joinpath(AssetDir.CONFIG_FILE_NAME), 'r') as f:
+                config = json.load(f)
+
+                if config[AssetDir.CFG_VERSION] != AssetDir.CONFIG_VERSION:
+                    # TODO: what to do if the config version does not match.
+                    pass
+
+                assets_dict = config[AssetDir.CFG_ASSETS]
+
+                # Load all the assets from the file.
+                for path, asset_dict in assets_dict.items():
+                    asset_uuid = asset_dict[AssetDir.CFG_ASSET_UUID]
+                    new_asset = Asset(path, asset_uuid=asset_uuid)
+
+                    assets[asset_uuid] = new_asset
+                    asset_paths.append(path)
+        except IOError:
+            # TODO: what if we can't access the file, but we know it's there?
+            #   The file not existing is not an error. Because then it is a new directory.
+            pass
+        except KeyError:
+            # TODO: what do we do when a key we expect to be there is not there?
+            pass
+
         subdirs = {}
         for item in _path.iterdir():
             if item.is_dir():
@@ -91,8 +123,12 @@ class AssetDir:
                     rel_path = item.relative_to(_path)
                     subdirs[rel_path] = new_subdir
             elif Asset.is_asset(item):
-                # Found a new asset in this directory.
-                new_asset = Asset(item)
-                assets[new_asset.uuid()] = new_asset
+                # Do we already know of this asset?
+                if str(item.relative_to(_path)) not in asset_paths:
+                    # Found a new asset in this directory, that was not in the config file.
+                    new_asset = Asset(item)
+                    assets[new_asset.uuid()] = new_asset
+
+        # TODO: What do we do with assets that were in the save file, but now are not?
 
         return AssetDir(path, subdirs, assets)

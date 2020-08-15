@@ -83,6 +83,9 @@ def test_unscanned_find_assets(files_dir):
         relative_path = asset.relative_path(asset_dir.absolute_path())
         found_assets.append(str(relative_path))
 
+        # Asset is new, so it should be marked as dirty.
+        assert asset.is_dirty()
+
     for expected_asset in expected_assets:
         assert expected_asset in found_assets
 
@@ -99,5 +102,23 @@ def test_unscanned_save_creates_file(files_dir):
     # Check if the file got saved.
     config_file = swords_dir.joinpath(AssetDir.CONFIG_FILE_NAME)
     assert config_file.is_file()
+
+
+def test_save_and_load(files_dir):
+    """
+    Checks if saving and then loading an asset dir will have the assets marked as clean.
+    """
+    swords_dir = pathlib.Path("unscanned_asset_dir/swords")
+    asset_dir = AssetDir.load(swords_dir)
+
+    asset_dir.save()
+
+    from_file = AssetDir.load(swords_dir)
+
+    assert len(from_file.assets()) == 3
+
+    # The assets should now not be dirty, as we loaded them from the config file.
+    for asset in from_file.assets().values():
+        assert not asset.is_dirty()
 
 # TODO test recursive loading.
