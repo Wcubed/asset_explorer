@@ -91,6 +91,9 @@ class AssetDir:
         Only creates json files in directories with assets.
         :return:
         """
+        # TODO: for some reason, when tags are added to an item in a subdirectory of this,
+        #       somehow those items will also be saved in this directory. Find out why.
+
         # Are any assets dirty? Then we save this directory.
         save = False
         for asset in self._assets.values():
