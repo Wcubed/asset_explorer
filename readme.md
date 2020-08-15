@@ -12,6 +12,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Remember the tags. By saving them in a `.asset_dir.json` in each directory and subdirectory?
 - [ ] Filter images by tag.
 - [ ] Show asset directories and their subdirectories. They are no longer "asset-packs"
+- [ ] Auto-save every x minutes (checks for dirty assets).
 
 - [x] Add a menu item to clear the cache.
 - [x] Add an asset pack (folder) to the library.
@@ -28,6 +29,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 
 # Whishlist
 - Add built-in tags, like: "transparent-background"
+- Auto-complete tag input with known tags.
 - Detect images with transparent backgrounds, and system-tag them accordingly (built-in tags)? How to do this reliably and quickly?
 - General robustnes (file not found, config key not found, and such.)
 - Make it clear that removing a pack, will not actually remove the "asset_pack.json" and therefore it's settings will

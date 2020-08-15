@@ -33,6 +33,9 @@ class MainWindow(Qwidgets.QMainWindow):
 
         # pathlib.Path -> AssetDir
         self.asset_dirs = {}
+
+        self.known_tags = set()
+
         # Application config goes into appdata (or platform equivalent)
         # The asset pack configuration will be saved in their respective directories.
         self.config_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.AppConfigLocation)
@@ -144,6 +147,9 @@ class MainWindow(Qwidgets.QMainWindow):
             self.asset_dirs[new_asset_dir.absolute_path()] = new_asset_dir
             new_abs_paths.append(new_asset_dir.absolute_path())
 
+            # Retrieve any new tags.
+            self.known_tags.update(new_asset_dir.known_tags_recursive())
+
         self.directory_explorer.clear_selection()
 
         # Save the newly added asset directories.
@@ -152,6 +158,9 @@ class MainWindow(Qwidgets.QMainWindow):
         # Update the asset list.
         for abs_path in new_abs_paths:
             self.asset_dir_list_widget.on_new_asset_dir(abs_path)
+
+        # Update the relevant widgets.
+        self.asset_details_widget.add_known_tags(self.known_tags)
 
     @Qcore.pyqtSlot()
     def on_asset_dir_selection_changed(self):
@@ -214,6 +223,11 @@ class MainWindow(Qwidgets.QMainWindow):
             # todo: show an appropriate log message for the reason.
             #       don't show a message if the file simply does not yet exist.
             logging.warning(self.tr("Could not load config file: \"{}\". Reason: {}").format(self.config_file, e))
+
+        # Retrieve all the known tags.
+        for asset_dir in self.asset_dirs.values():
+            self.known_tags.update(asset_dir.known_tags_recursive())
+        self.asset_details_widget.add_known_tags(self.known_tags)
 
     def save_config(self):
         # TODO: save a config version number, for if we need to convert config formats.

@@ -1,3 +1,6 @@
+import logging
+
+import PyQt5.QtCore as Qcore
 import PyQt5.QtWidgets as Qwidgets
 
 from data import Asset
@@ -28,23 +31,15 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
         self._title = Qwidgets.QLabel()
         layout.addWidget(self._title)
 
-        self._tag_list = Qwidgets.QListWidget()
-        layout.addWidget(self._tag_list)
-
-        add_tag_row = Qwidgets.QHBoxLayout()
-        layout.addLayout(add_tag_row)
-
-        add_tag_row.addWidget(Qwidgets.QLabel(self.tr("Add tag")))
-
-        self._add_tag_box = Qwidgets.QComboBox()
-        self._add_tag_box.setEditable(True)
-        add_tag_row.addWidget(self._add_tag_box)
-        add_tag_row.setStretch(1, 1)
+        self._tag_display = TagDisplay()
+        layout.addWidget(self._tag_display)
 
         layout.addStretch(1)
 
     def show_assets(self, assets: [Asset]):
         self._assets = assets
+
+        self._tag_display.show_tags_of_assets(assets)
 
         self.setVisible(True)
 
@@ -56,16 +51,14 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
             self._display.setPixmap(self._assets[0].load_image())
             self._display.setVisible(True)
             self._title.setText(self._assets[0].name())
-
-            if len(self._assets[0].tags()) > 0:
-                self._tag_list.setVisible(True)
-            else:
-                self._tag_list.setVisible(False)
         else:
             # Display multiple assets.
             self._display.clear()
             self._display.setVisible(False)
             self._title.setText(self.tr("{} assets selected").format(len(assets)))
+
+    def add_known_tags(self, known_tags):
+        self._tag_display.add_known_tags(known_tags)
 
     def clear_display(self):
         """
@@ -77,7 +70,6 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
         self._title.setText("")
 
         self._display.setVisible(False)
-        self._tag_list.setVisible(False)
 
         self._assets = None
 
@@ -107,3 +99,69 @@ class AspectRatioPixmapLabel(Qwidgets.QLabel):
             return int(pixmap.height() * (width / pixmap.width()))
         else:
             return 0
+
+
+class TagDisplay(Qwidgets.QWidget):
+
+    def __init__(self):
+        super().__init__()
+
+        self._assets = []
+        self._known_tags = set()
+
+        layout = Qwidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+
+        add_tag_row = Qwidgets.QHBoxLayout()
+        layout.addLayout(add_tag_row)
+
+        add_tag_row.addWidget(Qwidgets.QLabel(self.tr("Add tag")))
+
+        self._add_tag_box = Qwidgets.QComboBox()
+        self._add_tag_box.setEditable(True)
+        # Don't auto-insert when pressing "return".
+        self._add_tag_box.setInsertPolicy(Qwidgets.QComboBox.NoInsert)
+        add_tag_row.addWidget(self._add_tag_box)
+        add_tag_row.setStretch(1, 1)
+
+        for tag in self._known_tags:
+            self._add_tag_box.addItem(tag)
+
+        # ---- Connections ----
+
+        # Act when a user either selects or enters a tag.
+        self._add_tag_box.activated.connect(self.on_tag_selected)
+        self._add_tag_box.lineEdit().returnPressed.connect(self.on_tag_selected)
+
+    def add_known_tags(self, known_tags):
+        # Append currently unknown tags to the selection box.
+        for tag in known_tags:
+            if tag not in self._known_tags:
+                self._add_tag_box.addItem(tag)
+
+        self._known_tags.update(known_tags)
+        # When a tag is added, it is sometimes immediately selected in the box.
+        # This makes sure it stays empty unless the user says otherwise.
+        self._add_tag_box.setCurrentText("")
+
+    def show_tags_of_assets(self, assets: [Asset]):
+        self._assets = assets
+
+    @Qcore.pyqtSlot()
+    def on_tag_selected(self):
+        # TODO: add autocomplete.
+        # Get the tag, and clear the box.
+        tag = self._add_tag_box.currentText()
+        self._add_tag_box.setCurrentText("")
+
+        # Is it a new tag?
+        if tag not in self._known_tags:
+            self._known_tags.add(tag)
+            self._add_tag_box.addItem(tag)
+
+        # Update the assets with the new tag.
+        for asset in self._assets:
+            asset.add_tag(tag)
+
+        logging.debug("New tag: {}".format(tag))

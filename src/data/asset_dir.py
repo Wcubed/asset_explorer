@@ -68,6 +68,22 @@ class AssetDir:
 
         return count
 
+    def known_tags_recursive(self) -> set:
+        """
+        Retrieves all the tags known to the assets in this subtree.
+        """
+        tags = set()
+
+        # Get the tags of the assets in this directory.
+        for asset in self._assets.values():
+            tags.update(asset.tags())
+
+        # Get all the tags from the subdirectories.
+        for subdir in self._subdirs.values():
+            tags.update(subdir.known_tags_recursive())
+
+        return tags
+
     def save(self):
         """
         Recursively saves the json file for this directory, and all subdirectories.
@@ -91,7 +107,7 @@ class AssetDir:
 
                 # Save tags if there are any.
                 if len(asset.tags()) > 0:
-                    asset_dict[self.CFG_ASSET_TAGS] = asset.tags()
+                    asset_dict[self.CFG_ASSET_TAGS] = list(asset.tags())
 
                 assets_dict[str(asset.relative_path(self._path))] = asset_dict
 
@@ -146,8 +162,9 @@ class AssetDir:
             # TODO: what if we can't access the file, but we know it's there?
             #   The file not existing is not an error. Because then it is a new directory.
             pass
-        except KeyError:
+        except json.decoder.JSONDecodeError:
             # TODO: what do we do when a key we expect to be there is not there?
+            #       Or something else went wrong?
             pass
 
         subdirs = {}

@@ -39,13 +39,15 @@ class Asset:
 
     def add_tag(self, tag):
         self._tags.add(tag)
+        self._dirty = True
 
     def remove_tag(self, tag):
         self._tags.remove(tag)
+        self._dirty = True
 
     def is_dirty(self):
         """
-        And asset is dirty if it has been updated since the last save.
+        An asset is dirty if it has been updated since the last save.
         :return:
         """
         return self._dirty
