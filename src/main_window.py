@@ -8,6 +8,7 @@ import PyQt5.QtWidgets as Qwidgets
 
 import data
 import widgets
+from data import AssetDir
 
 
 class MainWindow(Qwidgets.QMainWindow):
@@ -15,6 +16,10 @@ class MainWindow(Qwidgets.QMainWindow):
 
     # How large can the pixmap cache grow? In Mb.
     PIXMAP_MEMORY_CACHE_LIMIT = 200
+
+    # How often should we check up on our async loader?
+    # In milliseconds.
+    ASYNC_CHECK_INTERVAL = 200
 
     def __init__(self):
         super().__init__()
@@ -39,6 +44,12 @@ class MainWindow(Qwidgets.QMainWindow):
         cache_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.CacheLocation)
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir)
+
+        self.async_loader = data.AsyncLoader()
+        # Timer so we can check up on the loader every so often.
+        self.async_update_timer = Qcore.QTimer()
+        self.async_update_timer.setInterval(self.ASYNC_CHECK_INTERVAL)
+        self.async_update_timer.timeout.connect(self.check_on_async_loader)
 
         # ---- Menu ----
 
@@ -129,25 +140,50 @@ class MainWindow(Qwidgets.QMainWindow):
         self.add_asset_dirs(abs_dirs)
 
     def add_asset_dirs(self, dir_paths):
-        new_abs_paths = []
         for dir_path in dir_paths:
             # TODO: what if there are duplicates?
             #       or a directory is contained in one we already have, or vice-versa?
-            new_asset_dir = data.recursive_load_asset_dir(dir_path)
-            self.asset_dirs[new_asset_dir.absolute_path()] = new_asset_dir
-            new_abs_paths.append(new_asset_dir.absolute_path())
+            # Queue up the new asset directories.
+            logging.info(self.tr("Queued scan: \"{}\"".format(dir_path)))
+            self.async_loader.queue_scan(dir_path)
 
-            # Retrieve any new tags.
-            self.known_tags.update(new_asset_dir.known_tags_recursive())
+        # Check up on the loading every so often.
+        self.async_update_timer.start()
 
         self.directory_explorer.clear_selection()
 
-        # Save the newly added asset directories.
+    @Qcore.pyqtSlot()
+    def check_on_async_loader(self):
+        results = self.async_loader.get_maybe_result()
+
+        if results is not None:
+            self.on_asset_dir_load_complete(results)
+
+        # Display what is currently being worked on.
+        in_progress = self.async_loader.currently_scanning()
+        if in_progress is not None:
+            # TODO: show it somewhere else than the status bar?
+            self.statusBar().showMessage(self.tr("Scanning: {}".format(in_progress)))
+        else:
+            self.statusBar().clearMessage()
+            # No need to check if nothing is happening.
+            self.async_update_timer.stop()
+
+    def on_asset_dir_load_complete(self, new_dir: AssetDir):
+        """
+        Call when a new asset dir has been loaded.
+        :param new_dir: The new `AssetDir`
+        """
+        self.asset_dirs[new_dir.absolute_path()] = new_dir
+
+        # Remember any new tags.
+        self.known_tags.update(new_dir.known_tags_recursive())
+
+        # Save the newly added asset directory.
         self.save_config()
 
         # Update the asset list.
-        for abs_path in new_abs_paths:
-            self.asset_dir_list_widget.on_new_asset_dir(abs_path)
+        self.asset_dir_list_widget.on_new_asset_dir(new_dir.absolute_path())
 
         # Update the relevant widgets.
         self.asset_details_widget.add_known_tags(self.known_tags)
@@ -193,6 +229,13 @@ class MainWindow(Qwidgets.QMainWindow):
             config = data.ProgramConfig()
 
         self.directory_explorer.cd_to_directory(config.last_directory())
+
+        # Queue the loading of the asset directories.
+        for asset_dir in config.asset_dirs():
+            self.async_loader.queue_scan(asset_dir)
+
+        # Check up on the loading every so often.
+        self.async_update_timer.start()
 
     def save_config(self):
         # First save the program config.
