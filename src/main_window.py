@@ -2,13 +2,14 @@ import json
 import logging
 import os
 import pathlib
+from concurrent import futures
 
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
 
+import data
 import widgets
-from data import AssetDir
 
 
 class MainWindow(Qwidgets.QMainWindow):
@@ -40,6 +41,9 @@ class MainWindow(Qwidgets.QMainWindow):
         # The asset pack configuration will be saved in their respective directories.
         self.config_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.AppConfigLocation)
         self.config_file = self.config_dir + "/" + self.CONFIG_FILE_NAME
+
+        # Separate thread to load asset directories with.
+        self.asset_dir_load_thread = futures.ThreadPoolExecutor()
 
         # Set a nice high in-memory cache limit for our asset thumbnails.
         # Is in Kb.
@@ -143,7 +147,7 @@ class MainWindow(Qwidgets.QMainWindow):
         for dir_path in dir_paths:
             # TODO: what if there are duplicates?
             #       or a directory is contained in one we already have, or vice-versa?
-            new_asset_dir = AssetDir.load(dir_path)
+            new_asset_dir = data.recursive_load_asset_dir(dir_path)
             self.asset_dirs[new_asset_dir.absolute_path()] = new_asset_dir
             new_abs_paths.append(new_asset_dir.absolute_path())
 
@@ -240,7 +244,7 @@ class MainWindow(Qwidgets.QMainWindow):
         # Save the individual asset directories.
         asset_dir_paths = []
         for asset_dir in self.asset_dirs.values():
-            asset_dir.save()
+            data.recursive_save_asset_dir(asset_dir)
             asset_dir_paths.append(str(asset_dir.absolute_path()))
 
         config = {
