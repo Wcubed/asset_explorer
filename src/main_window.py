@@ -89,24 +89,49 @@ class MainWindow(Qwidgets.QMainWindow):
         # Asset table shouldn't auto stretch.
         self.main_splitter.setStretchFactor(0, 0)
 
-        self.asset_list_widget = widgets.AssetListWidget()
-        self.main_splitter.addWidget(self.asset_list_widget)
-        self.main_splitter.setStretchFactor(1, 0)
+        # ---- Asset list display ----
 
-        # This is for testing the flow grid.
+        asset_list_display = Qwidgets.QWidget()
+        asset_list_display_layout = Qwidgets.QVBoxLayout()
+        asset_list_display_layout.setContentsMargins(0, 0, 0, 0)
+        asset_list_display.setLayout(asset_list_display_layout)
+        self.main_splitter.addWidget(asset_list_display)
+        self.main_splitter.setStretchFactor(1, 1)
+
+        # Add search and tool bar.
+        asset_list_bar = Qwidgets.QWidget()
+        asset_list_bar_layout = Qwidgets.QHBoxLayout()
+        asset_list_bar_layout.setContentsMargins(0, 0, 0, 0)
+        asset_list_bar.setLayout(asset_list_bar_layout)
+        asset_list_display_layout.addWidget(asset_list_bar)
+
+        # Right-align the rest.
+        asset_list_bar_layout.addStretch(1)
+
+        # Add list / grid switcher button.
+        self.list_grid_switch_button = Qwidgets.QPushButton(self.tr("Grid"))
+        asset_list_bar_layout.addWidget(self.list_grid_switch_button)
+
+        # This stack contains all the asset listing views.
+        self.asset_list_display_stack = Qwidgets.QStackedWidget()
+        asset_list_display_layout.addWidget(self.asset_list_display_stack)
+
+        self.asset_list_widget = widgets.AssetListWidget()
+        self.asset_list_display_stack.addWidget(self.asset_list_widget)
+
         self.asset_flow_grid = widgets.AssetFlowGridWidget()
-        self.main_splitter.addWidget(self.asset_flow_grid)
-        self.main_splitter.setStretchFactor(2, 1)
+        self.asset_list_display_stack.addWidget(self.asset_flow_grid)
 
         # Details display
         self.asset_details_widget = widgets.AssetsDetailsWidget()
         self.main_splitter.addWidget(self.asset_details_widget)
-        self.main_splitter.setStretchFactor(3, 0)
+        self.main_splitter.setStretchFactor(2, 0)
 
         # ---- Connections ----
 
         self.asset_dir_list_widget.selection_changed.connect(self.on_asset_dir_selection_changed)
         self.asset_list_widget.selection_changed.connect(self.on_asset_selection_changed)
+        self.list_grid_switch_button.pressed.connect(self.switch_between_grid_and_list_view)
 
         # ----
 
@@ -121,6 +146,18 @@ class MainWindow(Qwidgets.QMainWindow):
 
         # Close.
         event.accept()
+
+    def switch_between_grid_and_list_view(self):
+        if self.asset_list_display_stack.currentIndex() == 0:
+            # Currently displaying the list.
+            # Switch to the grid.
+            self.asset_list_display_stack.setCurrentIndex(1)
+            self.list_grid_switch_button.setText(self.tr("List"))
+        else:
+            # Currently displaying the grid.
+            # Switch to the list.
+            self.asset_list_display_stack.setCurrentIndex(0)
+            self.list_grid_switch_button.setText(self.tr("Grid"))
 
     def open_directory_dialog_to_add_asset_directories(self):
         # We use a semi-custom dialog to allow selecting multiple directories.
