@@ -1,4 +1,5 @@
 import json
+import logging
 import pathlib
 import uuid
 
@@ -56,7 +57,8 @@ class AssetDir:
         """
         :return: All the assets contained in this directory and all of the recursive subdirectories.
         """
-        assets = self._assets
+        # Make a new dictionary, otherwise we change which assets we hold.
+        assets = dict(self._assets)
         for subdir in self._subdirs.values():
             assets.update(subdir.assets_recursive())
         return assets
@@ -91,8 +93,6 @@ class AssetDir:
         Only creates json files in directories with assets.
         :return:
         """
-        # TODO: for some reason, when tags are added to an item in a subdirectory of this,
-        #       somehow those items will also be saved in this directory. Find out why.
 
         # Are any assets dirty? Then we save this directory.
         save = False
@@ -128,8 +128,6 @@ class AssetDir:
 
     @staticmethod
     def load(path):
-        # TODO: load from the .asset_dir.json file, if it exists.
-
         _path = pathlib.Path(path)
 
         assets = {}
@@ -147,6 +145,16 @@ class AssetDir:
 
                 # Load all the assets from the file.
                 for asset_path, asset_dict in assets_dict.items():
+                    # First, check if the asset path only consists of a file name.
+                    if str(pathlib.Path(asset_path).parent) != ".":
+                        # The asset is not immediately in this directory.
+                        # Ignore it, it will be listed in it's containing directory's config file.
+                        logging.debug(
+                            "Asset in config is not in this directory. Ignoring it. (\"{}\" is not in \"{}\").".format(
+                                asset_path,
+                                _path))
+                        continue
+
                     absolute_path = _path.joinpath(asset_path).absolute()
 
                     asset_uuid = uuid.UUID(asset_dict[AssetDir.CFG_ASSET_UUID])
