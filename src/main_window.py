@@ -139,10 +139,24 @@ class MainWindow(Qwidgets.QMainWindow):
 
         self.add_asset_dirs(abs_dirs)
 
-    def add_asset_dirs(self, dir_paths):
-        for dir_path in dir_paths:
-            # TODO: what if there are duplicates?
-            #       or a directory is contained in one we already have, or vice-versa?
+    def add_asset_dirs(self, dir_paths: [pathlib.Path]):
+        # Remove duplicates from the list.
+        paths = set(dir_paths)
+
+        for dir_path in paths:
+            # TODO: what if a directory is contained in one we already have, or vice-versa?
+            # Check for duplicates in our directory list.
+            if dir_path in self.asset_dirs.keys():
+                # Duplicate!
+                logging.info(self.tr("Asset dir is already loaded: \"{}\"".format(dir_path)))
+                continue
+
+            # Check for duplicates in the scanner queue, or currently active scan.
+            if dir_path in self.async_loader.scan_queue() or dir_path == self.async_loader.currently_scanning():
+                # Duplicate!
+                logging.info(self.tr("Asset dir is already being loaded: \"{}\"".format(dir_path)))
+                continue
+
             # Queue up the new asset directories.
             logging.info(self.tr("Queued scan: \"{}\"".format(dir_path)))
             self.async_loader.queue_scan(dir_path)
@@ -240,7 +254,13 @@ class MainWindow(Qwidgets.QMainWindow):
 
     def save_config(self):
         # First save the program config.
-        asset_dirs = self.asset_dirs.keys()
+        asset_dirs = list(self.asset_dirs.keys())
+
+        # Also save asset dirs that were yet to be scanned.
+        asset_dirs += self.async_loader.scan_queue()
+        if self.async_loader.currently_scanning() is not None:
+            asset_dirs.append(self.async_loader.currently_scanning())
+
         last_dir = self.directory_explorer.get_current_directory().absolutePath()
 
         config = data.ProgramConfig(asset_dirs, last_dir)
