@@ -109,18 +109,20 @@ class MainWindow(Qwidgets.QMainWindow):
         asset_list_bar_layout.addStretch(1)
 
         # Add list / grid switcher button.
-        self.list_grid_switch_button = Qwidgets.QPushButton(self.tr("Grid"))
+        self.list_grid_switch_button = Qwidgets.QPushButton(self.tr("List"))
         asset_list_bar_layout.addWidget(self.list_grid_switch_button)
 
         # This stack contains all the asset listing views.
         self.asset_list_display_stack = Qwidgets.QStackedWidget()
         asset_list_display_layout.addWidget(self.asset_list_display_stack)
 
-        self.asset_list_widget = widgets.AssetListWidget()
-        self.asset_list_display_stack.addWidget(self.asset_list_widget)
-
+        # The grid must be number 0 in the stack (for the switch function).
         self.asset_flow_grid = widgets.AssetFlowGridWidget()
         self.asset_list_display_stack.addWidget(self.asset_flow_grid)
+
+        # The list must be number 1 in the stack (for the switch function).
+        self.asset_list_widget = widgets.AssetListWidget()
+        self.asset_list_display_stack.addWidget(self.asset_list_widget)
 
         # Details display
         self.asset_details_widget = widgets.AssetsDetailsWidget()
@@ -148,15 +150,15 @@ class MainWindow(Qwidgets.QMainWindow):
         event.accept()
 
     def switch_between_grid_and_list_view(self):
-        if self.asset_list_display_stack.currentIndex() == 0:
+        if self.asset_list_display_stack.currentIndex() == 1:
             # Currently displaying the list.
             # Switch to the grid.
-            self.asset_list_display_stack.setCurrentIndex(1)
+            self.asset_list_display_stack.setCurrentIndex(0)
             self.list_grid_switch_button.setText(self.tr("List"))
         else:
             # Currently displaying the grid.
             # Switch to the list.
-            self.asset_list_display_stack.setCurrentIndex(0)
+            self.asset_list_display_stack.setCurrentIndex(1)
             self.list_grid_switch_button.setText(self.tr("Grid"))
 
     def open_directory_dialog_to_add_asset_directories(self):

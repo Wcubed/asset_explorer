@@ -11,6 +11,9 @@ class AssetDirListWidget(Qwidgets.QWidget):
     COUNT_COL = 1
     PATH_COL = 2
 
+    NAME_COL_WIDTH = 200
+    COUNT_COL_WIDTH = 50
+
     selection_changed = Qcore.pyqtSignal()
 
     def __init__(self, asset_dirs: {}):
@@ -23,17 +26,20 @@ class AssetDirListWidget(Qwidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
+        # Show name, count, and some extra to hint that the full path is also there.
+        self.setMinimumWidth(self.NAME_COL_WIDTH + self.COUNT_COL_WIDTH + 30)
+
         self.view = Qwidgets.QTableWidget()
         layout.addWidget(self.view)
 
         # Setup the headers.
         self.view.insertColumn(self.NAME_COL)
         self.view.setHorizontalHeaderItem(self.NAME_COL, Qwidgets.QTableWidgetItem(self.tr("Name")))
-        self.view.setColumnWidth(self.NAME_COL, 150)
+        self.view.setColumnWidth(self.NAME_COL, self.NAME_COL_WIDTH)
 
         self.view.insertColumn(self.COUNT_COL)
         self.view.setHorizontalHeaderItem(self.COUNT_COL, Qwidgets.QTableWidgetItem(self.tr("Assets")))
-        self.view.setColumnWidth(self.COUNT_COL, 50)
+        self.view.setColumnWidth(self.COUNT_COL, self.COUNT_COL_WIDTH)
 
         self.view.insertColumn(self.PATH_COL)
         self.view.setHorizontalHeaderItem(self.PATH_COL, Qwidgets.QTableWidgetItem(self.tr("Path")))
