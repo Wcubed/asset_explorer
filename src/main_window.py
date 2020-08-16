@@ -179,14 +179,15 @@ class MainWindow(Qwidgets.QMainWindow):
         # Remember any new tags.
         self.known_tags.update(new_dir.known_tags_recursive())
 
-        # Save the newly added asset directory.
-        self.save_config()
-
         # Update the asset list.
         self.asset_dir_list_widget.on_new_asset_dir(new_dir.absolute_path())
 
         # Update the relevant widgets.
         self.asset_details_widget.add_known_tags(self.known_tags)
+
+        # If we are done loading: save the newly added asset directory / directories.
+        if self.async_loader.queue_size() == 0:
+            self.save_config()
 
     @Qcore.pyqtSlot()
     def on_asset_dir_selection_changed(self):

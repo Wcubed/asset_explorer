@@ -53,6 +53,9 @@ class AsyncLoader:
         """
         return self._currently_scanning
 
+    def queue_size(self):
+        return len(self._dirs_to_scan)
+
     def _maybe_start_next_scan(self):
         """
         Starts a next scan if there is no scan running, and there is something queued.
