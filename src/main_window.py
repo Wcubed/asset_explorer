@@ -29,6 +29,8 @@ class MainWindow(Qwidgets.QMainWindow):
 
         # pathlib.Path -> AssetDir
         self.asset_dirs = {}
+        # The last directory that the file dialog was in.
+        self.last_dialog_directory = pathlib.Path()
 
         self.known_tags = set()
 
@@ -53,12 +55,16 @@ class MainWindow(Qwidgets.QMainWindow):
 
         # ---- Menu ----
 
+        add_asset_dirs_action = Qwidgets.QAction(self.tr("Add asset directories"), parent=self)
+        add_asset_dirs_action.triggered.connect(self.open_directory_dialog_to_add_asset_directories)
+
         clear_thumbnail_cache_action = Qwidgets.QAction(self.tr("Clear thumbnail cache"), parent=self)
         clear_thumbnail_cache_action.setStatusTip(
             self.tr("Clears the thumbnail cache in memory as well as on the disk."))
         clear_thumbnail_cache_action.triggered.connect(self.clear_thumbnail_caches)
 
         menu = self.menuBar().addMenu(self.tr("&File"))
+        menu.addAction(add_asset_dirs_action)
         menu.addAction(clear_thumbnail_cache_action)
 
         # ---- Layout ----
@@ -78,42 +84,27 @@ class MainWindow(Qwidgets.QMainWindow):
         layout.addWidget(self.main_splitter)
         self.main_splitter.setHandleWidth(10)
 
-        explorer_column = Qwidgets.QWidget()
-        explorer_layout = Qwidgets.QVBoxLayout()
-        explorer_layout.setContentsMargins(0, 0, 0, 0)
-        explorer_column.setLayout(explorer_layout)
-        self.main_splitter.addWidget(explorer_column)
-        # Explorer shouldn't auto-stretch.
-        self.main_splitter.setStretchFactor(0, 0)
-
-        self.directory_explorer = widgets.FilesystemExplorer()
-        explorer_layout.addWidget(self.directory_explorer)
-
-        new_asset_dir_button = Qwidgets.QPushButton(text=self.tr("Add selected folders"))
-        explorer_layout.addWidget(new_asset_dir_button)
-
         self.asset_dir_list_widget = widgets.AssetDirListWidget(self.asset_dirs)
         self.main_splitter.addWidget(self.asset_dir_list_widget)
         # Asset table shouldn't auto stretch.
-        self.main_splitter.setStretchFactor(1, 0)
+        self.main_splitter.setStretchFactor(0, 0)
 
         self.asset_list_widget = widgets.AssetListWidget()
         self.main_splitter.addWidget(self.asset_list_widget)
-        self.main_splitter.setStretchFactor(2, 0)
+        self.main_splitter.setStretchFactor(1, 0)
 
         # This is for testing the flow grid.
         self.asset_flow_grid = widgets.AssetFlowGridWidget()
         self.main_splitter.addWidget(self.asset_flow_grid)
-        self.main_splitter.setStretchFactor(3, 1)
+        self.main_splitter.setStretchFactor(2, 1)
 
         # Details display
         self.asset_details_widget = widgets.AssetsDetailsWidget()
         self.main_splitter.addWidget(self.asset_details_widget)
-        self.main_splitter.setStretchFactor(4, 0)
+        self.main_splitter.setStretchFactor(3, 0)
 
         # ---- Connections ----
 
-        new_asset_dir_button.clicked.connect(self.add_selected_asset_dirs)
         self.asset_dir_list_widget.selection_changed.connect(self.on_asset_dir_selection_changed)
         self.asset_list_widget.selection_changed.connect(self.on_asset_selection_changed)
 
@@ -131,13 +122,32 @@ class MainWindow(Qwidgets.QMainWindow):
         # Close.
         event.accept()
 
-    def add_selected_asset_dirs(self):
-        new_dirs = self.directory_explorer.get_selected_directories()
-        abs_dirs = []
-        for new_dir in new_dirs:
-            abs_dirs.append(pathlib.Path(new_dir.absolutePath()))
+    def open_directory_dialog_to_add_asset_directories(self):
+        # We use a semi-custom dialog to allow selecting multiple directories.
+        # See: https://stackoverflow.com/a/38255958
+        dialog = Qwidgets.QFileDialog()
+        # Open it where we left off.
+        dialog.setDirectory(str(self.last_dialog_directory))
+        dialog.setFileMode(Qwidgets.QFileDialog.DirectoryOnly)
+        dialog.setOption(Qwidgets.QFileDialog.DontUseNativeDialog, True)
+        dir_view = dialog.findChild(Qwidgets.QListView, 'listView')
 
-        self.add_asset_dirs(abs_dirs)
+        # Allow selecting multiple directories.
+        if dir_view:
+            dir_view.setSelectionMode(Qwidgets.QAbstractItemView.ExtendedSelection)
+
+        tree_view = dialog.findChild(Qwidgets.QTreeView)
+        if tree_view:
+            tree_view.setSelectionMode(Qwidgets.QAbstractItemView.ExtendedSelection)
+
+        if dialog.exec():
+            # Add the selected directories.
+            paths = dialog.selectedFiles()
+
+            abs_dirs = []
+            for path in paths:
+                abs_dirs.append(pathlib.Path(path).absolute())
+            self.add_asset_dirs(abs_dirs)
 
     def add_asset_dirs(self, dir_paths: [pathlib.Path]):
         # Remove duplicates from the list.
@@ -243,7 +253,8 @@ class MainWindow(Qwidgets.QMainWindow):
             # Create a default config.
             config = data.ProgramConfig()
 
-        self.directory_explorer.cd_to_directory(config.last_directory())
+        # Remember where the directory dialog left off.
+        self.last_dialog_directory = config.last_directory()
 
         # Queue the loading of the asset directories.
         for asset_dir in config.asset_dirs():
@@ -261,7 +272,8 @@ class MainWindow(Qwidgets.QMainWindow):
         if self.async_loader.currently_scanning() is not None:
             asset_dirs.append(self.async_loader.currently_scanning())
 
-        last_dir = self.directory_explorer.get_current_directory().absolutePath()
+        # Remember where the directory dialog left off.
+        last_dir = self.last_dialog_directory
 
         config = data.ProgramConfig(asset_dirs, last_dir)
         data.program_config.save_program_config(config, self.config_dir)

@@ -6,14 +6,13 @@ This is an attempt to make it easy to search for a particular kind of item or im
 # Feature list
 ## Required
 
-- [ ] Add asset packs via dialog, instead of the file explorer sidebar.
-- [ ] Tag images.
-- [ ] Show what tags an image has.
-- [ ] Remember the tags. By saving them in a `.asset_dir.json` in each directory and subdirectory?
 - [ ] Filter images by tag.
-- [ ] Show asset directories and their subdirectories. They are no longer "asset-packs"
 - [ ] Auto-save every x minutes (checks for dirty assets).
 
+- [x] Add asset packs via dialog, instead of the file explorer sidebar.
+- [x] Tag images.
+- [x] Show what tags an image has.
+- [x] Remember the tags. By saving them in a `.asset_dir.json` in each directory and subdirectory?
 - [x] Add a menu item to clear the cache.
 - [x] Add an asset pack (folder) to the library.
 - [x] Remove an asset pack (folder) from the library.
@@ -28,6 +27,12 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Allow for clearing the thumbnail cache.
 
 # Whishlist
+- [ ] Show asset directories and their subdirectories in a tree view?
+- Add colors to certain tags? So that assets get an outline with that color? Might be difficult with how the tags are saved now.
+  Could work if the tags are also saved in the config.json. but then you should be able to put the config.json somewhere 
+  other than the appdata directory, for cross-platform and backup functionality.
+- Allow saving the "config.json" somewhere else. Maybe by using a "look here" setting in the appdata config?
+  Or simply simlink :P.
 - Add built-in tags, like: "transparent-background"
 - Auto-complete tag input with known tags.
 - Detect images with transparent backgrounds, and system-tag them accordingly (built-in tags)? How to do this reliably and quickly?
