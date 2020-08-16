@@ -1,8 +1,6 @@
-import json
 import logging
 import os
 import pathlib
-from concurrent import futures
 
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
@@ -14,17 +12,9 @@ import widgets
 
 class MainWindow(Qwidgets.QMainWindow):
     DEFAULT_WINDOW_SIZE = (1000, 800)
-    CONFIG_FILE_NAME = "config.json"
-    # Version number to keep track of breaking changes in config files.
-    CONFIG_VERSION = 1
 
     # How large can the pixmap cache grow? In Mb.
     PIXMAP_MEMORY_CACHE_LIMIT = 200
-
-    # Keys for the configuration dictionary.
-    CFG_KEY_VERSION = "version"
-    CFG_KEY_ASSET_DIRS = "asset_dirs"
-    CFG_KEY_LAST_DIRECTORY = "last_directory"
 
     def __init__(self):
         super().__init__()
@@ -40,10 +30,6 @@ class MainWindow(Qwidgets.QMainWindow):
         # Application config goes into appdata (or platform equivalent)
         # The asset pack configuration will be saved in their respective directories.
         self.config_dir = Qcore.QStandardPaths.writableLocation(Qcore.QStandardPaths.AppConfigLocation)
-        self.config_file = self.config_dir + "/" + self.CONFIG_FILE_NAME
-
-        # Separate thread to load asset directories with.
-        self.asset_dir_load_thread = futures.ThreadPoolExecutor()
 
         # Set a nice high in-memory cache limit for our asset thumbnails.
         # Is in Kb.
@@ -199,59 +185,23 @@ class MainWindow(Qwidgets.QMainWindow):
         cache_dir.removeRecursively()
 
     def load_config(self):
-        try:
-            with open(self.config_file, 'r') as f:
-                logging.info(self.tr("Loading config from: \"{}\"").format(self.config_file))
+        config = data.program_config.load_program_config(self.config_dir)
 
-                # TODO: What to do if loading fails?
-                #       currently it will throw an exception.
-                config = json.load(f)
+        if config is None:
+            # Config could not be loaded.
+            # Create a default config.
+            config = data.ProgramConfig()
 
-                version = config[self.CFG_KEY_VERSION]
-                # Check if we know this config version.
-                if version != self.CONFIG_VERSION:
-                    # TODO: what to do if the versions don't match?
-                    logging.info(self.tr(
-                        "Unknown config version found: \'{}\', "
-                        "expected: \'{}\'. Will attempt to load anyway.").format(version,
-                                                                                 self.CONFIG_VERSION))
-
-                # Restore the last directory the explorer was at.
-                self.directory_explorer.cd_to_directory(config[self.CFG_KEY_LAST_DIRECTORY])
-
-                # Restore all asset directories.
-                asset_dirs = config[self.CFG_KEY_ASSET_DIRS]
-                self.add_asset_dirs(asset_dirs)
-        except IOError as e:
-            # We could not load the file.
-            # todo: show an appropriate log message for the reason.
-            #       don't show a message if the file simply does not yet exist.
-            logging.warning(self.tr("Could not load config file: \"{}\". Reason: {}").format(self.config_file, e))
-
-        # Retrieve all the known tags.
-        for asset_dir in self.asset_dirs.values():
-            self.known_tags.update(asset_dir.known_tags_recursive())
-        self.asset_details_widget.add_known_tags(self.known_tags)
+        self.directory_explorer.cd_to_directory(config.last_directory())
 
     def save_config(self):
-        # TODO: save a config version number, for if we need to convert config formats.
-        logging.info(self.tr("Saving config to: \"{}\"").format(self.config_file))
+        # First save the program config.
+        asset_dirs = self.asset_dirs.keys()
+        last_dir = self.directory_explorer.get_current_directory().absolutePath()
 
-        # Make sure the directories exist.
-        if not os.path.isdir(self.config_dir):
-            os.makedirs(self.config_dir)
+        config = data.ProgramConfig(asset_dirs, last_dir)
+        data.program_config.save_program_config(config, self.config_dir)
 
-        # Save the individual asset directories.
-        asset_dir_paths = []
+        # And then save all the asset directory data.
         for asset_dir in self.asset_dirs.values():
             data.recursive_save_asset_dir(asset_dir)
-            asset_dir_paths.append(str(asset_dir.absolute_path()))
-
-        config = {
-            self.CFG_KEY_VERSION: self.CONFIG_VERSION,
-            self.CFG_KEY_ASSET_DIRS: asset_dir_paths,
-            self.CFG_KEY_LAST_DIRECTORY: self.directory_explorer.get_current_directory().absolutePath()
-        }
-
-        with open(self.config_file, 'w') as f:
-            json.dump(config, f)

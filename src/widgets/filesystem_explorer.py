@@ -68,8 +68,8 @@ class FilesystemExplorer(widgets.QWidget):
         path = self.model.filePath(index)
         self.cd_to_directory(path)
 
-    def cd_to_directory(self, directory: str):
-        self.current_directory.cd(directory)
+    def cd_to_directory(self, directory):
+        self.current_directory.cd(str(directory))
 
         self.update_ui()
 
