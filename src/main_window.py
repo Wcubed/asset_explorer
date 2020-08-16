@@ -158,7 +158,7 @@ class MainWindow(Qwidgets.QMainWindow):
                 continue
 
             # Queue up the new asset directories.
-            logging.info(self.tr("Queued scan: \"{}\"".format(dir_path)))
+            logging.info(self.tr("Queued new asset directory: \"{}\"".format(dir_path)))
             self.async_loader.queue_scan(dir_path)
 
         # Check up on the loading every so often.
@@ -177,9 +177,9 @@ class MainWindow(Qwidgets.QMainWindow):
         in_progress = self.async_loader.currently_scanning()
         if in_progress is not None:
             # TODO: show it somewhere else than the status bar?
-            self.statusBar().showMessage(self.tr("Scanning: {}".format(in_progress)))
+            self.statusBar().showMessage(self.tr("Loading: {}".format(in_progress)))
         else:
-            self.statusBar().clearMessage()
+            self.statusBar().showMessage(self.tr("Loading complete"))
             # No need to check if nothing is happening.
             self.async_update_timer.stop()
 

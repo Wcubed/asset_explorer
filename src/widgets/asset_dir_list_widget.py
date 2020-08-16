@@ -69,6 +69,9 @@ class AssetDirListWidget(Qwidgets.QWidget):
         path_item = Qwidgets.QTableWidgetItem(str(asset_dir.absolute_path()))
         self.view.setItem(0, self.PATH_COL, path_item)
 
+        # Sort the table based on the names.
+        self.view.sortItems(self.NAME_COL, Qcore.Qt.AscendingOrder)
+
     @Qcore.pyqtSlot()
     def on_remove_button_pressed(self):
         remove_rows = []
