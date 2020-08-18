@@ -168,6 +168,7 @@ class MainWindow(Qwidgets.QMainWindow):
 
         self.asset_dir_list_widget.selection_changed.connect(self.on_asset_dir_selection_changed)
         self.asset_list_widget.selection_changed.connect(self.on_asset_selection_changed)
+        self.asset_flow_grid.selection_changed.connect(self.on_asset_selection_changed)
         self.list_grid_switch_button.pressed.connect(self.switch_between_grid_and_list_view)
 
         self.tag_search_box.activated.connect(self.on_selected_search_tag_changed)
@@ -347,7 +348,13 @@ class MainWindow(Qwidgets.QMainWindow):
 
     @Qcore.pyqtSlot()
     def on_asset_selection_changed(self):
-        assets = self.asset_list_widget.get_selected_assets()
+        assets = []
+        if self.asset_list_display_stack.currentIndex() == 1:
+            # Currently displaying the list.
+            assets = self.asset_list_widget.get_selected_assets()
+        else:
+            # Currently displaying the grid.
+            assets = self.asset_flow_grid.get_selected_assets()
         self.asset_details_widget.show_assets(assets)
 
     def on_packs_removed(self):

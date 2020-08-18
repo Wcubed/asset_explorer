@@ -1,9 +1,11 @@
 import math
+from uuid import UUID
 
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
 
+from data import Asset
 from .asset_flow_grid_item_widget import AssetFlowGridItemWidget
 
 
@@ -15,6 +17,8 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
     # Scroll 3 items at a time if we can vertically display
     # more items than this.
     SCROLL_3_PER_TICK_LIMIT = 8
+
+    selection_changed = Qcore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -40,9 +44,8 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         # The last, potentially cut off, row doesn't count as whitespace.
         self._max_scroll_row = 0
 
-        # Which asset locations in the grid are currently selected.
-        # (not uuid, the index in the grid).
-        self._selected_asset_ids = []
+        # Which asset are selected (uuids).
+        self._selected_asset_uuids = []
 
         # ---- Layout ----
 
@@ -109,7 +112,7 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         self._assets = assets
 
         # Deselect all.
-        self._selected_asset_ids = []
+        self._selected_asset_uuids = []
 
         # Scroll up when displaying new assets.
         self._scrollbar.setValue(0)
@@ -129,9 +132,10 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         for row in self._asset_grid:
             for widget in row:
                 if asset_index < len(assets):
-                    widget.show_asset(assets[asset_index], asset_index)
+                    asset = assets[asset_index]
+                    widget.show_asset(asset)
                     # Is this one selected?
-                    widget.set_selected(asset_index in self._selected_asset_ids)
+                    widget.set_selected(asset.uuid() in self._selected_asset_uuids)
 
                     asset_index += 1
                 else:
@@ -253,15 +257,25 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         # Set the scrollbar position, and let the `valueChanged` signal take care of the rest.
         self._scrollbar.setValue(new_value)
 
-    @Qcore.pyqtSlot(int, int, int)
-    def on_asset_item_clicked(self, grid_x, grid_y, asset_index):
+    def get_selected_assets(self) -> [Asset]:
+        selected_assets = []
+        for asset_uuid in self._selected_asset_uuids:
+            selected_assets.append(self._assets[asset_uuid])
+
+        return selected_assets
+
+    @Qcore.pyqtSlot(int, int, UUID)
+    def on_asset_item_clicked(self, grid_x, grid_y, asset_uuid):
         # TODO: shift and ctrl selection.
 
-        if asset_index in self._selected_asset_ids:
+        if asset_uuid in self._selected_asset_uuids:
             # Deselect.
             self._asset_grid[grid_y][grid_x].set_selected(False)
-            self._selected_asset_ids.remove(asset_index)
+            self._selected_asset_uuids.remove(asset_uuid)
         else:
             # Select.
             self._asset_grid[grid_y][grid_x].set_selected(True)
-            self._selected_asset_ids.append(asset_index)
+            self._selected_asset_uuids.append(asset_uuid)
+
+        # Let the rest know the selection changed.
+        self.selection_changed.emit()

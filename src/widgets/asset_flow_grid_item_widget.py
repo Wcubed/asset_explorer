@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
@@ -14,18 +16,16 @@ class AssetFlowGridItemWidget(Qwidgets.QWidget):
     HEIGHT = IMAGE_SIZE + MARGIN * 2
 
     # Fires when the left mouse button is pressed.
-    # Sends along x and y position in the grid, along with the asset index in the flow grid.
-    left_mouse_pressed = Qcore.pyqtSignal(int, int, int)
+    # Sends along x and y position in the grid, along with the uuid of the asset.
+    left_mouse_pressed = Qcore.pyqtSignal(int, int, UUID)
 
     def __init__(self, grid_x, grid_y):
         super().__init__()
 
         self._asset = None
 
-        # Which index does the asset displayed have in the flow grid?
-        # Necessary for selections.
-        self._asset_index = 0
         # Where in the physical grid this widget is located.
+        # Used for selections.
         self._grid_x = grid_x
         self._grid_y = grid_y
 
@@ -40,13 +40,12 @@ class AssetFlowGridItemWidget(Qwidgets.QWidget):
         self._display.setFixedSize(Qcore.QSize(self.IMAGE_SIZE, self.IMAGE_SIZE))
         layout.addWidget(self._display)
 
-    def show_asset(self, asset: Asset, asset_index: int):
+    def show_asset(self, asset: Asset):
         """
         By default the widget will not load the image.
         Call this when the asset widget becomes visible.
         """
         self._asset = asset
-        self._asset_index = asset_index
 
         self._display.setPixmap(self._asset.load_thumbnail_cached(self.IMAGE_SIZE))
 
@@ -57,7 +56,6 @@ class AssetFlowGridItemWidget(Qwidgets.QWidget):
         if self._asset:
             self._display.clear()
             self._asset = None
-            self._asset_index = 0
 
     def set_selected(self, selected: bool):
         # TODO: use the QPallete defined selection color.
@@ -71,4 +69,4 @@ class AssetFlowGridItemWidget(Qwidgets.QWidget):
     def mousePressEvent(self, event: Qgui.QMouseEvent) -> None:
         # If we have an asset, we should react to left click selection events.
         if self._asset is not None and event.button() == Qcore.Qt.LeftButton:
-            self.left_mouse_pressed.emit(self._grid_x, self._grid_y, self._asset_index)
+            self.left_mouse_pressed.emit(self._grid_x, self._grid_y, self._asset.uuid())
