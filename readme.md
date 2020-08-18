@@ -6,8 +6,6 @@ This is an attempt to make it easy to search for a particular kind of item or im
 # Feature list
 ## Required
 
-- [ ] Auto-save asset directories every x minutes (check for dirty assets before saving a directory).
-- [ ] More complex tag filtering.
 - [ ] Allow selecting in image grid.
 - [ ] Allow right-mouse-button -> Copy image / path / folder path, on assets in the grid and list.
 - [ ] Allow for copying the image itself. Instead of the path.
@@ -15,9 +13,8 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] More complex search:
   - Tagged with x or x or x
   - Not tagged with x or x or x
-- [ ] When you tag an image / remove a tag from an image, and there is a filter active. Re-run the filter.
-    - [ ] Make this a toggleable option with a checkbox?
 
+- [x] Auto-save asset directories every x minutes (check for dirty assets before saving a directory).
 - [x] Filter images by tag.
 - [x] Add asset packs via dialog, instead of the file explorer sidebar.
 - [x] Tag images.
@@ -38,6 +35,9 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Auto-complete tag input with known tags.
 
 ## Wishlist
+- [ ] When you tag an image / remove a tag from an image, and there is a filter active. Re-run the filter.
+    - [ ] Make this a toggleable option with a checkbox?
+- [ ] Sort the tags alphabetically in the selection boxes.
 - [ ] Log the date when an image was last scanned / made a thumbnail for. If the image on disk is newer, invalidate
       any automatic tags and thumbnails and re-scan the image.
 - [ ] Ability to quickly colorize images.
