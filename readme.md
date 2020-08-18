@@ -37,15 +37,14 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Allow for clearing the thumbnail cache.
 - [x] Auto-complete tag input with known tags.
 
-# Whishlist
+## Wishlist
 - [ ] Log the date when an image was last scanned / made a thumbnail for. If the image on disk is newer, invalidate
       any automatic tags and thumbnails and re-scan the image.
 - [ ] Ability to quickly colorize images.
 - [ ] Ability to add frames / backdrops / backgrounds to images.
 - [ ] Ability to save those generated images in a folder.
     - Frame goes around the image, and is transparent in the middle.
-    - Backdrop goes behind the image and contains it. (like one of those hexagon tiles)
-      Maybe find a different name for that?
+    - Slot goes behind the image and contains it. (like one of those hexagon tiles)
     - Background fills the entire image and goes behind everything.
 - [ ] Allow the moving of assets between folders?
 - [ ] Also show subdirectories in the directory tree that don't contain assets.

@@ -21,6 +21,9 @@ class MainWindow(Qwidgets.QMainWindow):
     # In milliseconds.
     ASYNC_CHECK_INTERVAL = 200
 
+    # In milliseconds.
+    AUTOSAVE_INTERVAL = 60000
+
     UNTAGGED_SEARCH_KEY = "UNTAGGED"
     SEARCH_BOX_MINIMUM_WIDTH = 200
 
@@ -51,10 +54,22 @@ class MainWindow(Qwidgets.QMainWindow):
             os.makedirs(cache_dir)
 
         self.async_loader = data.AsyncLoader()
+
+        # ---- Timers ----
+
         # Timer so we can check up on the loader every so often.
         self.async_update_timer = Qcore.QTimer()
         self.async_update_timer.setInterval(self.ASYNC_CHECK_INTERVAL)
         self.async_update_timer.timeout.connect(self.check_on_async_loader)
+
+        # Autosave interval.
+        # We save the asset info at exit, but we also want to save it regularly in between.
+        # Due to the way the AssetDir saving works, only directories with changed assets will actually be saved.
+        self.autosave_timer = Qcore.QTimer()
+        self.autosave_timer.setInterval(self.AUTOSAVE_INTERVAL)
+        # Only save the asset directories on autosave. The global config gets saved as soon as it changes.
+        self.autosave_timer.timeout.connect(self.save_asset_dirs)
+        self.autosave_timer.start()
 
         # ---- Menu ----
 
@@ -383,5 +398,10 @@ class MainWindow(Qwidgets.QMainWindow):
         data.program_config.save_program_config(config, self.config_dir)
 
         # And then save all the asset directory data.
+        self.save_asset_dirs()
+
+    @Qcore.pyqtSlot()
+    def save_asset_dirs(self):
+        logging.info(self.tr("Saving any changed asset information."))
         for asset_dir in self.asset_dirs.values():
             data.recursive_save_asset_dir(asset_dir)
