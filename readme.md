@@ -38,6 +38,10 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Auto-complete tag input with known tags.
 
 ## Wishlist
+- [ ] "Detect duplicates in selection" button, that will flag and merge duplicate images.
+     - What do we do with any images that reference that id? They might currently not be loaded?
+       [ ] Implement a "hey, I can't find this id, it's supposed to be the transparent version of this, do
+            you know where it is?"
 - [ ] Sync selectins between asset grid and asset table.
 - [ ] Display tags in the asset table.
 - [ ] When you tag an image / remove a tag from an image, and there is a filter active. Re-run the filter.
