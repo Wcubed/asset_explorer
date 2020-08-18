@@ -23,7 +23,7 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
 
         # TODO: make this a zoomable and scrollable display?
         #       with an "actual size" button.
-        self._display = AspectRatioPixmapLabel()
+        self._display = AspectRatioPixmapWidget()
         layout.addWidget(self._display)
 
         self._title = Qwidgets.QLabel()
@@ -61,7 +61,7 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
             self.clear_display()
         elif len(assets) == 1:
             # Display a single asset.
-            self._display.setPixmap(self._assets[0].load_image())
+            self._display.set_pixmap(self._assets[0].load_image())
             self._display.setVisible(True)
             self._copy_button_row.setVisible(True)
             self._title.setText(self._assets[0].name())
@@ -108,8 +108,41 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
             clipboard.setText(str(self._assets[0].absolute_path().parent))
 
 
+class AspectRatioPixmapWidget(Qwidgets.QWidget):
+    """
+    A QPixmap display that will keep the image's aspect ratio when resizing.
+    When it has no image, it will be 0 pixels high.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        layout = Qwidgets.QHBoxLayout()
+        self.setLayout(layout)
+        # The stretch on both sides of the image makes sure it is centered with the right width.
+        # TODO: actually make this work! For small images it works, but for larger ones they still stretch.
+        layout.addStretch(1)
+        layout.addSpacing(10)
+
+        self._label = AspectRatioPixmapLabel()
+        layout.addWidget(self._label)
+        layout.setStretch(1, 0)
+
+        layout.addStretch(1)
+
+    def set_pixmap(self, pixmap):
+        self._label.setPixmap(pixmap)
+
+    def clear(self):
+        self._label.clear()
+
+
 class AspectRatioPixmapLabel(Qwidgets.QLabel):
     """
+    Use AspectRatioPixmapWidget instead of this one directly.
+    If you use this label directly, it will stretch in the width when
+    it's actual image is higher than it can fit given the width.
+
     A QLabel displaying a QPixmap.
     Except that it will keep the aspect ratio of the image intact on resizing.
     It can also be resized smaller than the images original resolution.
