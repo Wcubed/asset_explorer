@@ -213,8 +213,6 @@ class MainWindow(Qwidgets.QMainWindow):
         # Check up on the loading every so often.
         self.async_update_timer.start()
 
-        self.directory_explorer.clear_selection()
-
     @Qcore.pyqtSlot()
     def check_on_async_loader(self):
         results = self.async_loader.get_maybe_result()
