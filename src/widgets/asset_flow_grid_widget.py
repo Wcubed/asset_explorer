@@ -71,10 +71,15 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         self._layout.addWidget(scroll_area)
 
         # Create the container that keeps our asset grid widget from growing bigger than it's contents.
-        # TODO: there must be a better way to do this instead of nesting many widgets.
+        # TODO: there must be a better way to do this instead of having so many widgets nested into each other.
         #       It works though.
         spacer_widget = Qwidgets.QWidget()
-        spacer_widget.setStyleSheet("background: white;")
+        # Make sure the background is white.
+        spacer_widget.setAutoFillBackground(True)
+        white_palette = Qgui.QPalette()
+        white_palette.setColor(Qgui.QPalette.Window, Qcore.Qt.white)
+        spacer_widget.setPalette(white_palette)
+
         spacer_layout = Qwidgets.QGridLayout()
         spacer_widget.setLayout(spacer_layout)
         scroll_area.setWidget(spacer_widget)

@@ -37,8 +37,18 @@ class AssetFlowGridItemWidget(Qwidgets.QWidget):
 
         self._display = Qwidgets.QLabel()
         self._display.setContentsMargins(self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN)
-        self._display.setFixedSize(Qcore.QSize(self.IMAGE_SIZE, self.IMAGE_SIZE))
+        self._display.setFixedSize(Qcore.QSize(self.WIDTH, self.HEIGHT))
         layout.addWidget(self._display)
+
+        # ---- Colors ----
+
+        self.setAutoFillBackground(True)
+
+        # Background for normal and selected states.
+        self._normal_palette = self.palette()
+        self._selected_palette = Qgui.QPalette()
+        # For selected mode, we set the background to text highlight background.
+        self._selected_palette.setBrush(Qgui.QPalette.Window, self._normal_palette.brush(Qgui.QPalette.Highlight))
 
     def show_asset(self, asset: Asset):
         """
@@ -58,13 +68,13 @@ class AssetFlowGridItemWidget(Qwidgets.QWidget):
             self._asset = None
 
     def set_selected(self, selected: bool):
-        # TODO: use the QPallete defined selection color.
+        # TODO: use the default QPallete defined selection color? Coul
         # TODO: Show the selection around the image, not just behind it.
         #    (or maybe not even behind it and only just around it.)
         if selected:
-            self.setStyleSheet("background-color: blue;")
+            self.setPalette(self._selected_palette)
         else:
-            self.setStyleSheet("")
+            self.setPalette(self._normal_palette)
 
     def mousePressEvent(self, event: Qgui.QMouseEvent) -> None:
         # If we have an asset, we should react to left click selection events.
