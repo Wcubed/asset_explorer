@@ -29,10 +29,25 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
         self._title = Qwidgets.QLabel()
         layout.addWidget(self._title)
 
+        self._copy_button_row = Qwidgets.QWidget()
+        _copy_button_layout = Qwidgets.QHBoxLayout()
+        _copy_button_layout.setContentsMargins(0, 0, 0, 0)
+        self._copy_button_row.setLayout(_copy_button_layout)
+        layout.addWidget(self._copy_button_row)
+
+        _copy_image_path_button = Qwidgets.QPushButton(self.tr("Copy image path"))
+        _copy_button_layout.addWidget(_copy_image_path_button)
+
+        _copy_folder_path_button = Qwidgets.QPushButton(self.tr("Copy folder path"))
+        _copy_button_layout.addWidget(_copy_folder_path_button)
+
         self._tag_display = TagDisplay()
         layout.addWidget(self._tag_display)
 
         layout.addStretch(1)
+
+        _copy_image_path_button.pressed.connect(self.on_copy_image_path_pressed)
+        _copy_folder_path_button.pressed.connect(self.on_copy_folder_path_pressed)
 
     def show_assets(self, assets: [Asset]):
         self._assets = assets
@@ -48,11 +63,13 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
             # Display a single asset.
             self._display.setPixmap(self._assets[0].load_image())
             self._display.setVisible(True)
+            self._copy_button_row.setVisible(True)
             self._title.setText(self._assets[0].name())
         else:
             # Display multiple assets.
             self._display.clear()
             self._display.setVisible(False)
+            self._copy_button_row.setVisible(False)
             self._title.setText(self.tr("{} assets selected").format(len(assets)))
 
     def add_known_tags(self, known_tags):
@@ -73,6 +90,22 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
 
     def tag_display(self):
         return self._tag_display
+
+    @Qcore.pyqtSlot()
+    def on_copy_image_path_pressed(self):
+        # Only available when there is one asset selected.
+        if len(self._assets) == 1:
+            clipboard = Qwidgets.QApplication.clipboard()
+            # We copy the absolute path.
+            clipboard.setText(str(self._assets[0].absolute_path()))
+
+    @Qcore.pyqtSlot()
+    def on_copy_folder_path_pressed(self):
+        # Only available when there is one asset selected.
+        if len(self._assets) == 1:
+            clipboard = Qwidgets.QApplication.clipboard()
+            # We copy the absolute folder path.
+            clipboard.setText(str(self._assets[0].absolute_path().parent))
 
 
 class AspectRatioPixmapLabel(Qwidgets.QLabel):
