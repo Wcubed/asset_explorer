@@ -13,6 +13,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] More complex search:
   - Tagged with x or x or x
   - Not tagged with x or x or x
+- [ ] When selecting multiple assets: show what tags are shared by all, and which tags apply to only some of them.
 
 
 - [x] Allow selecting in image grid.
