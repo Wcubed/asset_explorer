@@ -11,6 +11,8 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Allow selecting in image grid.
 - [ ] Allow right-mouse-button -> Copy image / path / folder path, on assets in the grid and list.
 - [ ] Allow for copying the image itself. Instead of the path.
+- [ ] Show asset directories and their subdirectories in the tree view.
+    - [ ] Also show subdirectories that don't contain assets.
 
 - [x] Filter images by tag.
 - [x] Add asset packs via dialog, instead of the file explorer sidebar.
@@ -32,9 +34,16 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Auto-complete tag input with known tags.
 
 # Whishlist
+- [ ] Ability to quickly colorize images.
+- [ ] Ability to add frames / backdrops / backgrounds to images.
+    - Frame goes around the image, and is transparent in the middle.
+    - Backdrop goes behind the image and contains it. (like one of those hexagon tiles)
+      Maybe find a different name for that?
+    - Background fills the entire image and goes behind everything.
+- [ ] Allow the moving of assets between folders?
+- [ ] Allow for renaming assets?
 - [ ] Filter images by size?
 - [ ] Allow dragging the image to copy it to for example a file input of another application (QDrag?)
-- [ ] Show asset directories and their subdirectories in a tree view?
 - [ ] Allow renaming assets from both the details view, and the asset list (the table view).
 - Add colors to certain tags? So that assets get an outline with that color? Might be difficult with how the tags are saved now.
   Could work if the tags are also saved in the config.json. but then you should be able to put the config.json somewhere 
@@ -47,7 +56,6 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - Make it clear that removing a pack, will not actually remove the "asset_pack.json" and therefore it's settings will
   be remembered.
 - Sort asset packs by name.
-- Allow re-naming asset packs. This does not re-name the directory, merely save the new name in the asset_pack.json.
 - Re-Scan known asset packs on startup? And add a re-scan button.
     - Do something smart when old assets cannot be found.
 - Automatically discover alternate versions of an image (transparent / psd file etc.)
