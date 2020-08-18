@@ -6,12 +6,17 @@ This is an attempt to make it easy to search for a particular kind of item or im
 # Feature list
 ## Required
 
-- [ ] Auto-save every x minutes (checks for dirty assets).
+- [ ] Auto-save asset directories every x minutes (check for dirty assets before saving a directory).
 - [ ] More complex tag filtering.
 - [ ] Allow selecting in image grid.
 - [ ] Allow right-mouse-button -> Copy image / path / folder path, on assets in the grid and list.
 - [ ] Allow for copying the image itself. Instead of the path.
 - [ ] Show asset directories and their subdirectories in the tree view.
+- [ ] More complex search:
+  - Tagged with x or x or x
+  - Not tagged with x or x or x
+- [ ] When you tag an image / remove a tag from an image, and there is a filter active. Re-run the filter.
+    - [ ] Make this a toggleable option with a checkbox?
 
 - [x] Filter images by tag.
 - [x] Add asset packs via dialog, instead of the file explorer sidebar.
@@ -53,9 +58,13 @@ This is an attempt to make it easy to search for a particular kind of item or im
   other than the appdata directory, for cross-platform and backup functionality.
 - Allow saving the "config.json" somewhere else. Maybe by using a "look here" setting in the appdata config?
   Or simply simlink :P.
+  
 - Add built-in tags, like: "transparent-background"
 - Detect images with transparent backgrounds, and system-tag them accordingly (built-in tags)? How to do this reliably and quickly?
-- General robustnes (file not found, config key not found, and such.)
+- Detect predominant colors on images automatically.
+    - For example: is the percentage with pixels near color x above y percent? then tag it with that color's system tag.
+    - Allow overriding those automatic system tags?
+- General robustness (file not found, config key not found, and such.)
 - Make it clear that removing a pack, will not actually remove the "asset_pack.json" and therefore it's settings will
   be remembered.
 - Sort asset packs by name.
