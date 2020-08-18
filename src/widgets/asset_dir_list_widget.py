@@ -122,3 +122,6 @@ class AssetDirListWidget(Qwidgets.QWidget):
                 selection.append(self.asset_dirs[path])
 
         return selection
+
+    def clear_selection(self):
+        self.view.clearSelection()

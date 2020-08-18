@@ -71,6 +71,9 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
 
         self._assets = None
 
+    def tag_display(self):
+        return self._tag_display
+
 
 class AspectRatioPixmapLabel(Qwidgets.QLabel):
     """
@@ -100,6 +103,7 @@ class AspectRatioPixmapLabel(Qwidgets.QLabel):
 
 
 class TagDisplay(Qwidgets.QWidget):
+    new_tag = Qcore.pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -196,6 +200,8 @@ class TagDisplay(Qwidgets.QWidget):
         # Update the display with the new tag.
         if tag not in self._displayed_tags:
             self._tag_list.addItem(Qwidgets.QListWidgetItem(tag))
+            # Let others know that this tag is new.
+            self.new_tag.emit(tag)
 
     @Qcore.pyqtSlot()
     def on_remove_tag_button_pressed(self):

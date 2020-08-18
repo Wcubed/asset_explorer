@@ -21,6 +21,8 @@ class MainWindow(Qwidgets.QMainWindow):
     # In milliseconds.
     ASYNC_CHECK_INTERVAL = 200
 
+    UNTAGGED_SEARCH_KEY = "UNTAGGED"
+
     def __init__(self):
         super().__init__()
 
@@ -105,6 +107,21 @@ class MainWindow(Qwidgets.QMainWindow):
         asset_list_bar.setLayout(asset_list_bar_layout)
         asset_list_display_layout.addWidget(asset_list_bar)
 
+        # Add simple tag search widget.
+        # TODO: add new tags to this widget when they are added to the known tag list (because we added them to
+        #  an asset for the first time.
+        #  an asset for the first time.
+        self.tag_search_box = Qwidgets.QComboBox()
+        self.tag_search_box.setEditable(True)
+        # We only want to use the user input as a search option.
+        # So don't auto-insert when pressing "return".
+        self.tag_search_box.setInsertPolicy(Qwidgets.QComboBox.NoInsert)
+        # Make sure we can search for untagged items.
+        self.tag_search_box.addItem(self.UNTAGGED_SEARCH_KEY)
+        # Search box starts emtpy.
+        self.tag_search_box.setCurrentText("")
+        asset_list_bar_layout.addWidget(self.tag_search_box)
+
         # Right-align the rest.
         asset_list_bar_layout.addStretch(1)
 
@@ -134,6 +151,10 @@ class MainWindow(Qwidgets.QMainWindow):
         self.asset_dir_list_widget.selection_changed.connect(self.on_asset_dir_selection_changed)
         self.asset_list_widget.selection_changed.connect(self.on_asset_selection_changed)
         self.list_grid_switch_button.pressed.connect(self.switch_between_grid_and_list_view)
+
+        self.tag_search_box.activated.connect(self.on_selected_search_tag_changed)
+
+        self.asset_details_widget.tag_display().new_tag.connect(self.user_added_new_tag)
 
         # ----
 
@@ -238,17 +259,62 @@ class MainWindow(Qwidgets.QMainWindow):
         self.asset_dirs[new_dir.absolute_path()] = new_dir
 
         # Remember any new tags.
-        self.known_tags.update(new_dir.known_tags_recursive())
+        self.update_known_tags(new_dir.known_tags_recursive())
 
         # Update the asset list.
         self.asset_dir_list_widget.on_new_asset_dir(new_dir.absolute_path())
 
-        # Update the relevant widgets.
-        self.asset_details_widget.add_known_tags(self.known_tags)
-
         # If we are done loading: save the newly added asset directory / directories.
         if self.async_loader.queue_size() == 0:
             self.save_config()
+
+    @Qcore.pyqtSlot(str)
+    def user_added_new_tag(self, new_tag):
+        self.update_known_tags([new_tag])
+
+    def update_known_tags(self, new_tags):
+        previous_selected_tag = self.tag_search_box.currentIndex()
+
+        for tag in new_tags:
+            if tag not in self.known_tags:
+                self.tag_search_box.addItem(tag)
+                self.known_tags.add(tag)
+
+        # Update the relevant widgets.
+        self.asset_details_widget.add_known_tags(self.known_tags)
+        # Make sure the tag search keeps it's current item.
+        self.tag_search_box.setCurrentIndex(previous_selected_tag)
+
+    @Qcore.pyqtSlot()
+    def on_selected_search_tag_changed(self):
+        # When we search for tags, the selection in the asset dir list doesn't matter.
+        self.asset_dir_list_widget.clear_selection()
+
+        # Search for assets with a tag.
+        search_tag = self.tag_search_box.currentText()
+        if search_tag == self.UNTAGGED_SEARCH_KEY:
+            search_tag = None
+
+        # TODO: this can be more efficient.
+        # Search through all the assets for the ones that have the given tag.
+        filtered_assets = {}
+        for asset_dir in self.asset_dirs.values():
+            assets = asset_dir.assets_recursive()
+            for asset in assets.values():
+                # Are we looking for untagged or a specific tag?
+                if search_tag is None:
+                    # Looking for untagged.
+                    if len(asset.tags()) == 0:
+                        # Found an untagged item.
+                        filtered_assets[asset.uuid()] = asset
+                else:
+                    # Looking for a tag.
+                    if search_tag in asset.tags():
+                        # Found one.
+                        filtered_assets[asset.uuid()] = asset
+
+        self.asset_list_widget.show_assets(filtered_assets)
+        self.asset_flow_grid.show_assets(filtered_assets)
 
     @Qcore.pyqtSlot()
     def on_asset_dir_selection_changed(self):
@@ -259,8 +325,6 @@ class MainWindow(Qwidgets.QMainWindow):
             assets.update(asset_dir.assets_recursive())
 
         self.asset_list_widget.show_assets(assets)
-
-        # Testing for the asset flow grid.
         self.asset_flow_grid.show_assets(assets)
 
     @Qcore.pyqtSlot()
