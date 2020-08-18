@@ -6,7 +6,7 @@ This is an attempt to make it easy to search for a particular kind of item or im
 # Feature list
 ## Required
 
-- [ ] Allow selecting in image grid.
+- [ ] Allow shift and ctrl selecting in image grid.
 - [ ] Allow right-mouse-button -> Copy image / path / folder path, on assets in the grid and list.
 - [ ] Allow for copying the image itself. Instead of the path.
 - [ ] Show asset directories and their subdirectories in the tree view.
@@ -14,6 +14,8 @@ This is an attempt to make it easy to search for a particular kind of item or im
   - Tagged with x or x or x
   - Not tagged with x or x or x
 
+
+- [x] Allow selecting in image grid.
 - [x] Auto-save asset directories every x minutes (check for dirty assets before saving a directory).
 - [x] Filter images by tag.
 - [x] Add asset packs via dialog, instead of the file explorer sidebar.
@@ -35,6 +37,8 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Auto-complete tag input with known tags.
 
 ## Wishlist
+- [ ] Sync selectins between asset grid and asset table.
+- [ ] Display tags in the asset table.
 - [ ] When you tag an image / remove a tag from an image, and there is a filter active. Re-run the filter.
     - [ ] Make this a toggleable option with a checkbox?
 - [ ] Sort the tags alphabetically in the selection boxes.

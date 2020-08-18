@@ -15,9 +15,6 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
 
         self._assets = None
 
-        # Default invisible.
-        self.setVisible(False)
-
         layout = Qwidgets.QVBoxLayout()
         self.setLayout(layout)
 
@@ -49,12 +46,13 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
         _copy_image_path_button.pressed.connect(self.on_copy_image_path_pressed)
         _copy_folder_path_button.pressed.connect(self.on_copy_folder_path_pressed)
 
+        # Start out empty.
+        self.clear_display()
+
     def show_assets(self, assets: [Asset]):
         self._assets = assets
 
         self._tag_display.show_tags_of_assets(assets)
-
-        self.setVisible(True)
 
         if len(assets) == 0:
             # No assets to display.
@@ -79,12 +77,11 @@ class AssetsDetailsWidget(Qwidgets.QWidget):
         """
         Clears the asset(s) from this widget.
         """
-        self.setVisible(False)
-
         self._display.clear()
         self._title.setText("")
 
         self._display.setVisible(False)
+        self._copy_button_row.setVisible(False)
 
         self._assets = None
 
