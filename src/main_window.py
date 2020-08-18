@@ -22,6 +22,7 @@ class MainWindow(Qwidgets.QMainWindow):
     ASYNC_CHECK_INTERVAL = 200
 
     UNTAGGED_SEARCH_KEY = "UNTAGGED"
+    SEARCH_BOX_MINIMUM_WIDTH = 200
 
     def __init__(self):
         super().__init__()
@@ -113,17 +114,19 @@ class MainWindow(Qwidgets.QMainWindow):
         #  an asset for the first time.
         self.tag_search_box = Qwidgets.QComboBox()
         self.tag_search_box.setEditable(True)
+        self.tag_search_box.setMinimumWidth(self.SEARCH_BOX_MINIMUM_WIDTH)
+
         # We only want to use the user input as a search option.
         # So don't auto-insert when pressing "return".
         self.tag_search_box.setInsertPolicy(Qwidgets.QComboBox.NoInsert)
+
         # Make sure we can search for untagged items.
         self.tag_search_box.addItem(self.UNTAGGED_SEARCH_KEY)
+
         # Search box starts emtpy.
         self.tag_search_box.setCurrentText("")
         asset_list_bar_layout.addWidget(self.tag_search_box)
-
-        # Right-align the rest.
-        asset_list_bar_layout.addStretch(1)
+        asset_list_bar_layout.setStretch(0, 1)
 
         # Add list / grid switcher button.
         self.list_grid_switch_button = Qwidgets.QPushButton(self.tr("List"))
