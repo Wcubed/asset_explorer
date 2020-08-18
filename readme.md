@@ -12,7 +12,6 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [ ] Allow right-mouse-button -> Copy image / path / folder path, on assets in the grid and list.
 - [ ] Allow for copying the image itself. Instead of the path.
 - [ ] Show asset directories and their subdirectories in the tree view.
-    - [ ] Also show subdirectories that don't contain assets.
 
 - [x] Filter images by tag.
 - [x] Add asset packs via dialog, instead of the file explorer sidebar.
@@ -34,13 +33,17 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - [x] Auto-complete tag input with known tags.
 
 # Whishlist
+- [ ] Log the date when an image was last scanned / made a thumbnail for. If the image on disk is newer, invalidate
+      any automatic tags and thumbnails and re-scan the image.
 - [ ] Ability to quickly colorize images.
 - [ ] Ability to add frames / backdrops / backgrounds to images.
+- [ ] Ability to save those generated images in a folder.
     - Frame goes around the image, and is transparent in the middle.
     - Backdrop goes behind the image and contains it. (like one of those hexagon tiles)
       Maybe find a different name for that?
     - Background fills the entire image and goes behind everything.
 - [ ] Allow the moving of assets between folders?
+- [ ] Also show subdirectories in the directory tree that don't contain assets.
 - [ ] Allow for renaming assets?
 - [ ] Filter images by size?
 - [ ] Allow dragging the image to copy it to for example a file input of another application (QDrag?)
