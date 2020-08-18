@@ -6,9 +6,13 @@ This is an attempt to make it easy to search for a particular kind of item or im
 # Feature list
 ## Required
 
-- [ ] Filter images by tag.
 - [ ] Auto-save every x minutes (checks for dirty assets).
+- [ ] More complex tag filtering.
+- [ ] Allow selecting in image grid.
+- [ ] Allow right-mouse-button -> Copy image / path / folder path, on assets in the grid and list.
+- [ ] Allow for copying the image itself. Instead of the path.
 
+- [x] Filter images by tag.
 - [x] Add asset packs via dialog, instead of the file explorer sidebar.
 - [x] Tag images.
 - [x] Show what tags an image has.
@@ -25,16 +29,19 @@ This is an attempt to make it easy to search for a particular kind of item or im
     - [x] Cache the thumbnails on disk, by saving them with the hash of the asset path.
 - [x] Drop the full image from memory again if we don't need it. Otherwise we will fill quite a bit of ram.
 - [x] Allow for clearing the thumbnail cache.
+- [x] Auto-complete tag input with known tags.
 
 # Whishlist
+- [ ] Filter images by size?
+- [ ] Allow dragging the image to copy it to for example a file input of another application (QDrag?)
 - [ ] Show asset directories and their subdirectories in a tree view?
+- [ ] Allow renaming assets from both the details view, and the asset list (the table view).
 - Add colors to certain tags? So that assets get an outline with that color? Might be difficult with how the tags are saved now.
   Could work if the tags are also saved in the config.json. but then you should be able to put the config.json somewhere 
   other than the appdata directory, for cross-platform and backup functionality.
 - Allow saving the "config.json" somewhere else. Maybe by using a "look here" setting in the appdata config?
   Or simply simlink :P.
 - Add built-in tags, like: "transparent-background"
-- Auto-complete tag input with known tags.
 - Detect images with transparent backgrounds, and system-tag them accordingly (built-in tags)? How to do this reliably and quickly?
 - General robustnes (file not found, config key not found, and such.)
 - Make it clear that removing a pack, will not actually remove the "asset_pack.json" and therefore it's settings will
@@ -43,7 +50,6 @@ This is an attempt to make it easy to search for a particular kind of item or im
 - Allow re-naming asset packs. This does not re-name the directory, merely save the new name in the asset_pack.json.
 - Re-Scan known asset packs on startup? And add a re-scan button.
     - Do something smart when old assets cannot be found.
-- Autosave interval? So we don't save for every little thing.
 - Automatically discover alternate versions of an image (transparent / psd file etc.)
 - Detect when we add a folder which is inside a folder we already have added.
     - Or vice-versa, if we add a folder which is a parent folder of another one.
