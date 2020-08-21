@@ -1,10 +1,12 @@
 import math
+from uuid import UUID
 
 import PyQt5.QtCore as Qcore
 import PyQt5.QtGui as Qgui
 import PyQt5.QtWidgets as Qwidgets
 
-from .asset_widget import AssetWidget
+from data import Asset
+from .asset_flow_grid_item_widget import AssetFlowGridItemWidget
 
 
 class AssetFlowGridWidget(Qwidgets.QFrame):
@@ -16,15 +18,17 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
     # more items than this.
     SCROLL_3_PER_TICK_LIMIT = 8
 
+    selection_changed = Qcore.pyqtSignal()
+
     def __init__(self):
         super().__init__()
 
-        # hash -> Asset, ordered dictionary of the assets to be displayed.
+        # uuid -> Asset, ordered dictionary of the assets to be displayed.
         self._assets = {}
         # [y][x] grid of asset widgets.
         self._asset_grid = []
-        self._item_width = AssetWidget.WIDTH
-        self._item_height = AssetWidget.HEIGHT
+        self._item_width = AssetFlowGridItemWidget.WIDTH
+        self._item_height = AssetFlowGridItemWidget.HEIGHT
 
         # How many items we can currently fit in the view area.
         self._items_in_width = 0
@@ -39,6 +43,9 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         # before we get a full row of whitespace at the bottom?
         # The last, potentially cut off, row doesn't count as whitespace.
         self._max_scroll_row = 0
+
+        # Which asset are selected (uuids).
+        self._selected_asset_uuids = []
 
         # ---- Layout ----
 
@@ -64,10 +71,15 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         self._layout.addWidget(scroll_area)
 
         # Create the container that keeps our asset grid widget from growing bigger than it's contents.
-        # TODO: there must be a better way to do this instead of nesting many widgets.
+        # TODO: there must be a better way to do this instead of having so many widgets nested into each other.
         #       It works though.
         spacer_widget = Qwidgets.QWidget()
-        spacer_widget.setStyleSheet("background: white;")
+        # Make sure the background is white.
+        spacer_widget.setAutoFillBackground(True)
+        white_palette = Qgui.QPalette()
+        white_palette.setColor(Qgui.QPalette.Window, Qcore.Qt.white)
+        spacer_widget.setPalette(white_palette)
+
         spacer_layout = Qwidgets.QGridLayout()
         spacer_widget.setLayout(spacer_layout)
         scroll_area.setWidget(spacer_widget)
@@ -104,6 +116,9 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
     def show_assets(self, assets: dict):
         self._assets = assets
 
+        # Deselect all.
+        self._selected_asset_uuids = []
+
         # Scroll up when displaying new assets.
         self._scrollbar.setValue(0)
 
@@ -122,11 +137,16 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         for row in self._asset_grid:
             for widget in row:
                 if asset_index < len(assets):
-                    widget.show_asset(assets[asset_index])
+                    asset = assets[asset_index]
+                    widget.show_asset(asset)
+                    # Is this one selected?
+                    widget.set_selected(asset.uuid() in self._selected_asset_uuids)
+
                     asset_index += 1
                 else:
                     # No more assets to fill with.
                     widget.clear_display()
+                    widget.set_selected(False)
 
     def resizeEvent(self, event: Qgui.QResizeEvent) -> None:
         super().resizeEvent(event)
@@ -147,7 +167,9 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
 
             for x in range(0, self._items_in_width):
                 if x >= len(self._asset_grid[y]):
-                    new_widget = AssetWidget()
+                    new_widget = AssetFlowGridItemWidget(x, y)
+                    # Connect the signal necessary for selections to work.
+                    new_widget.left_mouse_pressed.connect(self.on_asset_item_clicked)
                     self._asset_grid[y].append(new_widget)
                     self._asset_layout.addWidget(new_widget, y, x, alignment=Qcore.Qt.AlignLeft)
                     # No stretching
@@ -240,3 +262,26 @@ class AssetFlowGridWidget(Qwidgets.QFrame):
         new_value = max(0, min(self._top_scroll_row + dy, self._max_scroll_row))
         # Set the scrollbar position, and let the `valueChanged` signal take care of the rest.
         self._scrollbar.setValue(new_value)
+
+    def get_selected_assets(self) -> [Asset]:
+        selected_assets = []
+        for asset_uuid in self._selected_asset_uuids:
+            selected_assets.append(self._assets[asset_uuid])
+
+        return selected_assets
+
+    @Qcore.pyqtSlot(int, int, UUID)
+    def on_asset_item_clicked(self, grid_x, grid_y, asset_uuid):
+        # TODO: shift and ctrl selection.
+
+        if asset_uuid in self._selected_asset_uuids:
+            # Deselect.
+            self._asset_grid[grid_y][grid_x].set_selected(False)
+            self._selected_asset_uuids.remove(asset_uuid)
+        else:
+            # Select.
+            self._asset_grid[grid_y][grid_x].set_selected(True)
+            self._selected_asset_uuids.append(asset_uuid)
+
+        # Let the rest know the selection changed.
+        self.selection_changed.emit()

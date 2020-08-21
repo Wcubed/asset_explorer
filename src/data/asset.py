@@ -1,53 +1,95 @@
-import hashlib
-import os
+import pathlib
+import uuid
 
-from PyQt5.QtCore import QFileInfo, Qt, QStandardPaths
+from PyQt5.QtCore import QStandardPaths, Qt
 from PyQt5.QtGui import QPixmap, QPixmapCache
 
 
 class Asset:
-    """
-    Keeps track of all the data associated with an asset.
-    Can load images and generate / cache thumbnails on request.
-    The thumbnails are stored in the global QPixmapCache with the hash as their key.
-    """
+    # All the file extensions that count as assets.
+    # All lowercase.
+    ASSET_EXTENSIONS = ['.png']
 
-    def __init__(self, path: str):
-        self._file_info = QFileInfo(path)
+    def __init__(self, path, asset_uuid=None, tags=None):
+        if tags is None:
+            tags = set()
 
-        # TODO: do we want to make this an application specific location?
-        self._thumbnail_cache_dir = QStandardPaths.writableLocation(QStandardPaths.CacheLocation)
+        self._path = pathlib.Path(path).absolute()
 
-        # We use the `hexdigest` representation instead of the raw bytes, so we can output it as a string.
-        # Which is needed in, for example, tables and the on-disk thumbnail cache.
-        # The reason for `hashlib.md5` instead of the python `hash` function is that the built-in function is
-        # randomized every session for security purposes.
-        # We want consistent, non-security hashes.
-        self._hash = hashlib.md5(self._file_info.absoluteFilePath().encode()).hexdigest()
+        self._uuid = asset_uuid
+        self._tags = tags
 
-    def get_hash(self):
+        # Marks whether the Asset has been edited in-memory since last time it was loaded.
+        self._dirty = False
+
+        if not self._uuid:
+            # Asset was not seen before, so generate a new uuid.
+            # We use uuid4 because we don't need cryptographically secure uuid's.
+            # We just want a random uuid.
+            self._uuid = uuid.uuid4()
+            self._dirty = True
+
+        self._thumbnail_cache_dir = pathlib.Path(QStandardPaths.writableLocation(QStandardPaths.CacheLocation))
+
+    def name(self):
+        return self._path.name
+
+    def tags(self):
+        return self._tags
+
+    def add_tag(self, tag):
+        self._tags.add(tag)
+        self._dirty = True
+
+    def remove_tag(self, tag):
+        self._tags.remove(tag)
+        self._dirty = True
+
+    def is_dirty(self):
         """
-        Returns the filepath-based hash, which identifies this asset.
+        An asset is dirty if it has been updated since the last save.
+        :return:
         """
-        return self._hash
+        return self._dirty
 
-    def get_name(self) -> str:
-        return self._file_info.fileName()
+    def was_saved(self):
+        """
+        Call after saving the asset. Marks it as clean again.
+        """
+        self._dirty = False
 
-    def get_absolute_path(self) -> str:
-        return self._file_info.absoluteFilePath()
+    def absolute_path(self):
+        """
+        :return: The absolute path as a `pathlib.Path`.
+        """
+        return self._path
 
-    def get_relative_path(self, relative_to) -> str:
-        return relative_to.relativeFilePath(self._file_info.absoluteFilePath())
+    def relative_path(self, relative_to: pathlib.Path):
+        return self._path.relative_to(relative_to)
+
+    def uuid(self):
+        """
+        :return: The unique uuid of this asset.
+        """
+        return self._uuid
+
+    @staticmethod
+    def is_asset(path) -> bool:
+        """
+        :param path: The path to check.
+        :return: True if the path is an asset, false if not.
+        """
+        _path = pathlib.Path(path)
+        return _path.is_file() and _path.suffix.lower() in Asset.ASSET_EXTENSIONS
 
     def load_image(self) -> QPixmap:
         # We don't cache the full sized image, so that we don't use multiple gigabytes of memory after a while.
         # TODO: do something if it goes wrong.
-        image = QPixmap(self._file_info.absoluteFilePath())
+        image = QPixmap(str(self.absolute_path()))
         return image
 
     def load_thumbnail_cached(self, size: int) -> QPixmap:
-        thumbnail_key = self._hash + "_" + str(size)
+        thumbnail_key = str(self._uuid) + "_" + str(size)
         # See if the thumbnail is already (or still) in the cache.
         # Returns `None` if it isn't.
         thumbnail = QPixmapCache.find(thumbnail_key)
@@ -57,10 +99,10 @@ class Asset:
             return thumbnail
         else:
             # Cache files are named: <hash>_<size>.png
-            cache_file_path = self._thumbnail_cache_dir + "/" + thumbnail_key + ".png"
-            if os.path.isfile(cache_file_path):
+            cache_file_path = self._thumbnail_cache_dir.joinpath(thumbnail_key).with_suffix(".png")
+            if cache_file_path.is_file():
                 # We already have a thumbnail of this size cached on disk.
-                thumbnail = QPixmap(cache_file_path)
+                thumbnail = QPixmap(str(cache_file_path))
             else:
                 image = self.load_image()
                 # Scale with preserved aspect ratio, so the image fits in a square with sides of "size".
@@ -71,7 +113,7 @@ class Asset:
                     thumbnail = image.scaledToWidth(size, Qt.SmoothTransformation)
 
                 # Save the thumbnail to disk.
-                thumbnail.save(cache_file_path, "png")
+                thumbnail.save(str(cache_file_path), "png")
 
             # Add the newly loaded / generated thumbnail to the cache.
             QPixmapCache.insert(thumbnail_key, thumbnail)
