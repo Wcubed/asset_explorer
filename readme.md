@@ -3,6 +3,8 @@
 
 This is an attempt to make it easy to search for a particular kind of item or image in a large collection of icons.
 
+![Screenshot showing an asset grid with a single asset selected.](screenshots/screenshot_01.png)
+
 # Feature list
 ## Required
 
